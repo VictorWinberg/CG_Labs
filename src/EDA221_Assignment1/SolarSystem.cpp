@@ -220,7 +220,7 @@ Node::get_transform() const
 	//
 	// Todo: Compute the node's object matrix
 	//
-	return translating;
+	return translating * rotating * scaling;
 }
 
 GLuint
@@ -308,7 +308,7 @@ void SolarSystem::run()
 	FPSCameraf mCamera(bonobo::pi / 4.0f,
 	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
 	                   0.01f, 1000.0f);
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 50.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 0.25f * 12.0f;
 	window->SetCamera(&mCamera);
@@ -320,15 +320,16 @@ void SolarSystem::run()
 		return;
 	}
 
+	auto sun = Node();
 	// Load the sun's texture
 	auto sun_texture = loadTexture2D("sunmap.png");
-
-	auto sun = Node();
 	sun.set_geometry(sphere);
 	sun.set_program(shader);
 	//
 	// Todo: Attach a texture to the sun
 	//
+	sun.add_texture("diffuse_texture", sun_texture);
+	sun.set_scaling(glm::vec3(15, 15, 15));
 
 
 	auto world = Node();
@@ -338,7 +339,101 @@ void SolarSystem::run()
 	//
 	// Todo: Create an Earth node
 	//
+	auto earth = Node();
+	auto earth_texture = loadTexture2D("earth_diffuse.png");
+	earth.set_geometry(sphere);
+	earth.set_program(shader);
+	earth.add_texture("diffuse_texture", earth_texture);
 
+	earth.set_scaling(glm::vec3(0.2f, 0.2f, 0.2f));
+	earth.set_translation(glm::vec3(3.5f, 0, 0));
+
+	auto earth_pivot = Node();
+	sun.add_child(&earth_pivot);
+
+	earth_pivot.add_child(&earth);
+
+	//
+	// Create a Moon node
+	//
+	auto moon = Node();
+	auto moon_texture = loadTexture2D("moon.png");
+	moon.set_geometry(sphere);
+	moon.set_program(shader);
+	moon.add_texture("diffuse_texture", moon_texture);
+
+	moon.set_scaling(glm::vec3(0.3f, 0.3f, 0.3f));
+	moon.set_translation(glm::vec3(2.0f, 0.0f, 0.0f));
+
+	auto moon_pivot = Node();
+	earth.add_child(&moon_pivot);
+
+	moon_pivot.add_child(&moon);
+
+	//
+	// Create planets
+	//
+	std::vector<Node> planets(7);
+	std::vector<glm::vec3> translations(7);
+	std::vector<glm::vec3> scalings(7);
+	std::vector<std::string> textures(7);
+	std::vector<int> orbit_speeds(7);
+	std::vector<float> rotation_period(7);
+
+	translations[0] = glm::vec3(1.5f, 0, 0);
+	scalings[0] = glm::vec3(0.1f, 0.1f, 0.1f);
+	textures[0] = "mercury.png";
+	orbit_speeds[0] = 48;
+	rotation_period[0] = 58.65f;
+	translations[1] = glm::vec3(2.5f, 0, 0);
+	scalings[1] = glm::vec3(0.2f, 0.2f, 0.2f);
+	textures[1] = "venus.png";
+	orbit_speeds[1] = 35;
+	rotation_period[1] = -243.0f;
+	translations[2] = glm::vec3(4.5f, 0, 0);
+	scalings[2] = glm::vec3(0.1f, 0.1f, 0.1f);
+	textures[2] = "mars.png";
+	orbit_speeds[2] = 24;
+	rotation_period[2] = 1.03f;
+	translations[3] = glm::vec3(6.0f, 0, 0);
+	scalings[3] = glm::vec3(0.5f, 0.5f, 0.5f);
+	textures[3] = "jupiter.png";
+	orbit_speeds[3] = 13;
+	rotation_period[3] = 0.41f;
+	translations[4] = glm::vec3(8.0f, 0, 0);
+	scalings[4] = glm::vec3(0.5f, 0.5f, 0.5f);
+	textures[4] = "saturn.png";
+	orbit_speeds[4] = 10;
+	rotation_period[4] = 0.44f;
+	translations[5] = glm::vec3(10.0f, 0, 0);
+	scalings[5] = glm::vec3(0.3f, 0.3f, 0.3f);
+	textures[5] = "uranus.png";
+	orbit_speeds[5] = 7;
+	rotation_period[5] = -0.72f;
+	translations[6] = glm::vec3(12.0f, 0, 0);
+	scalings[6] = glm::vec3(0.3f, 0.3f, 0.3f);
+	textures[6] = "neptune.png";
+	orbit_speeds[6] = 5;
+	rotation_period[6] = 0.72f;
+
+	for (int i = 0; i < planets.size(); i++) {
+		planets[i].set_geometry(sphere);
+		planets[i].set_program(shader);
+		planets[i].set_translation(translations[i]);
+		planets[i].set_scaling(scalings[i]);
+		planets[i].add_texture("diffuse_texture", loadTexture2D(textures[i]));
+	}
+
+	//
+	// Create planet pivots
+	//
+	std::vector<Node> planet_pivots(7);
+
+	for (int i = 0; i < planet_pivots.size(); i++) {
+		planet_pivots[i].set_rotation_y(1 / rotation_period[i]);
+		planet_pivots[i].add_child(&planets[i]);
+		sun.add_child(&planet_pivots[i]);
+	}
 
 	f64 ddeltatime;
 	size_t fpsSamples = 0;
@@ -364,8 +459,21 @@ void SolarSystem::run()
 		//
 		// How-To: Translate the sun
 		//
-		sun.set_translation(glm::vec3(std::sin(nowTime), 0.0f, 0.0f));
-
+		double orbitSpeed = 0.0001;
+		double rotationSpeed = 0.01;
+		
+		sun.rotate_y(- 0.0001f);
+		
+		earth_pivot.rotate_y(- 30 * orbitSpeed);
+		earth.rotate_y(- rotationSpeed / 1);
+		
+		moon_pivot.rotate_y(rotationSpeed - orbitSpeed * 0.03f);
+		moon.rotate_y(- rotationSpeed / 27);
+		
+		for (int i = 0; i < planets.size(); i++) {
+			planets[i].rotate_y(- rotationSpeed / rotation_period[i]);
+			planet_pivots[i].rotate_y(- orbit_speeds[i] * orbitSpeed);
+		}
 
 		auto const window_size = window->GetDimensions();
 		glViewport(0, 0, window_size.x, window_size.y);
@@ -390,7 +498,7 @@ void SolarSystem::run()
 			//
 			// Todo: Compute the current node's world matrix
 			//
-			auto const current_node_world_matrix = current_node_matrix;
+			auto const current_node_world_matrix = parent_matrix * current_node_matrix;
 			current_node->render(mCamera.GetWorldToClipMatrix(), current_node_world_matrix);
 
 			for (int i = static_cast<int>(current_node->get_children_nb()) - 1; i >= 0; --i) {
@@ -399,7 +507,7 @@ void SolarSystem::run()
 			}
 		} while (!node_stack.empty());
 
-		Log::View::Render();
+//		Log::View::Render();
 		ImGui::Render();
 
 		window->Swap();
