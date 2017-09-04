@@ -5,22 +5,22 @@ class InputHandler;
 class Window;
 
 
-namespace eda221
+namespace edaf80
 {
-	//! \brief Wrapper class for Assignment 2
-	class Assignment2 {
+	//! \brief Wrapper class for Assignment 3
+	class Assignment3 {
 	public:
 		//! \brief Default constructor.
 		//!
 		//! It will initialise various modules of bonobo and retrieve a
 		//! window to draw to.
-		Assignment2();
+		Assignment3();
 
 		//! \brief Default destructor.
 		//!
 		//! It will release the bonobo modules initialised by the
 		//! constructor, as well as the window.
-		~Assignment2();
+		~Assignment3();
 
 		//! \brief Contains the logic of the assignment, along with the
 		//! render loop.
