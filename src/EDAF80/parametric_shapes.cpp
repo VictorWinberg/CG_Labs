@@ -65,7 +65,7 @@ parametric_shapes::createQuad(unsigned int width, unsigned int height)
 
 	auto const vertices_size = static_cast<GLsizeiptr>(vertices.size() * sizeof(glm::vec3));
 	auto const bo_size = static_cast<GLsizeiptr>(vertices_size);
-	
+
 	glBufferData(GL_ARRAY_BUFFER, /*! \todo how many bytes should the buffer contain? */ bo_size /*0u*/,
 				 /* where is the data stored on the CPU? */ static_cast<GLvoid const*>(vertices.data()) /*vertices.data()*/,
 				 /* inform OpenGL that the data is modified once, but used often */GL_STATIC_DRAW);
@@ -158,12 +158,12 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 			vertices[index] = glm::vec3(itr_radius * cos_theta,
 										itr_radius * sin_theta,
 										0.0f);
-			
+            
 			// texture coordinates
 			texcoords[index] = glm::vec3(static_cast<float>(j) / (static_cast<float>(res_radius) - 1.0f),
 										 static_cast<float>(i) / (static_cast<float>(res_theta)  - 1.0f),
 										 0.0f);
-			
+
 			// tangent
 			auto t = glm::vec3(cos_theta, sin_theta, 0.0f);
 			t = glm::normalize(t);
