@@ -125,9 +125,7 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 {
 
 	//! \todo (Optional) Implement this function
-	auto const res_radius = 4u;
-	
-	auto const vertices_nb = res_radius * res_theta;
+	auto const vertices_nb = res_theta * res_phi;
 	
 	auto vertices  = std::vector<glm::vec3>(vertices_nb);
 	auto normals   = std::vector<glm::vec3>(vertices_nb);
@@ -139,38 +137,36 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 	dtheta = 2.0f * bonobo::pi / (static_cast<float>(res_theta) - 1.0f); // step size, depending on the resolution
 	
 	// Added phi!
-	float phi = 0.0f,                                                  // 'stepping'-variable for theta: will go 0 - 2PI
-	dphi = 2.0f * bonobo::pi / (static_cast<float>(res_phi) - 1.0f); // step size, depending on the resolution
-	
-	float itr_radius = 0.0f,                     // 'stepping'-variable for radius: will go inner_radius - outer_radius
-	dradius = radius / (static_cast<float>(res_radius) - 1.0f); // step size, depending on the resolution
+	float phi = 0.0f,                                                    // 'stepping'-variable for phi: will go 0 - PI
+	dphi = bonobo::pi / (static_cast<float>(res_phi) - 1.0f);            // step size, depending on the resolution
 	
 	// generate vertices iteratively
 	size_t index = 0u;
-	for (unsigned int i = 0u; i < res_theta; ++i) {
-		float cos_theta = std::cos(theta),
-		sin_theta = std::sin(theta);
-		
-		itr_radius = 0.0f;
-		
-		for (unsigned int j = 0u; j < res_radius; ++j) {
+    for (unsigned int i = 0u; i < res_phi; ++i) {
+        float cos_phi = std::cos(phi),
+        sin_phi = std::sin(phi);
+
+        for (unsigned int j = 0u; j < res_theta; ++j) {
+            float cos_theta = std::cos(theta),
+            sin_theta = std::sin(theta);
+
 			// vertex
-			vertices[index] = glm::vec3(itr_radius * cos_theta,
-										itr_radius * sin_theta,
-										0.0f);
+			vertices[index] = glm::vec3(radius * cos_theta * sin_phi,
+										- radius * cos_phi,
+										radius * sin_theta * sin_phi);
             
 			// texture coordinates
-			texcoords[index] = glm::vec3(static_cast<float>(j) / (static_cast<float>(res_radius) - 1.0f),
-										 static_cast<float>(i) / (static_cast<float>(res_theta)  - 1.0f),
+			texcoords[index] = glm::vec3(static_cast<float>(j) / (static_cast<float>(res_theta) - 1.0f),
+										 static_cast<float>(i) / (static_cast<float>(res_phi)  - 1.0f),
 										 0.0f);
 
 			// tangent
-			auto t = glm::vec3(cos_theta, sin_theta, 0.0f);
+			auto t = glm::vec3(radius * cos_theta * sin_phi, 0, - radius * sin_theta * sin_phi);
 			t = glm::normalize(t);
 			tangents[index] = t;
-			
+
 			// binormal
-			auto b = glm::vec3(-sin_theta, cos_theta, 0.0f);
+			auto b = glm::vec3(radius * sin_theta * cos_phi, radius * sin_phi, radius * cos_theta * cos_phi);
 			b = glm::normalize(b);
 			binormals[index] = b;
 			
@@ -178,30 +174,28 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 			auto const n = glm::cross(t, b);
 			normals[index] = n;
 			
-			itr_radius += dradius;
+            theta += dtheta;
 			++index;
 		}
-		
-		theta += dtheta;
+
+        phi += dphi;
 	}
 	
 	// create index array
-	auto indices = std::vector<glm::uvec3>(2u * (res_theta - 1u) * (res_radius - 1u));
+	auto indices = std::vector<glm::uvec3>(2u * (res_theta - 1u) * (res_phi - 1u));
 	
 	// generate indices iteratively
 	index = 0u;
-	for (unsigned int i = 0u; i < res_theta - 1u; ++i)
-	{
-		for (unsigned int j = 0u; j < res_radius - 1u; ++j)
-		{
-			indices[index] = glm::uvec3(res_radius * i + j,
-										res_radius * i + j + 1u,
-										res_radius * i + j + 1u + res_radius);
+    for (unsigned int i = 0u; i < res_phi - 1u; ++i) {
+        for (unsigned int j = 0u; j < res_theta - 1u; ++j) {
+			indices[index] = glm::uvec3(res_theta * i + j,
+										res_theta * i + j + 1u,
+										res_theta * i + j + res_theta);
 			++index;
-			
-			indices[index] = glm::uvec3(res_radius * i + j,
-										res_radius * i + j + res_radius + 1u,
-										res_radius * i + j + res_radius);
+
+			indices[index] = glm::uvec3(res_theta * i + j + 1u,
+										res_theta * i + j + res_theta,
+										res_theta * i + j + 1u + res_theta);
 			++index;
 		}
 	}

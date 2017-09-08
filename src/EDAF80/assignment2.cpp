@@ -120,7 +120,7 @@ edaf80::Assignment2::run()
 
 	//! \todo Create a tesselated sphere and a tesselated torus
 	auto const quad_shape = parametric_shapes::createQuad(2u, 2u);
-	auto const sphere_shape = parametric_shapes::createSphere(60u, 0, 2.0f);
+	auto const sphere_shape = parametric_shapes::createSphere(10u, 10u, 2.0f);
 
 	auto polygon_mode = polygon_mode_t::fill;
 
