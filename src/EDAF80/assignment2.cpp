@@ -65,9 +65,7 @@ void
 edaf80::Assignment2::run()
 {
 	// Load the sphere geometry
-//	auto const shape = parametric_shapes::createCircleRing(4u, 60u, 1.0f, 2.0f);
-	auto const shape = parametric_shapes::createQuad(4u, 2u);
-//	auto const shape = parametric_shapes::createSphere(60u, 0, 2.0f);
+	auto const shape = parametric_shapes::createCircleRing(4u, 60u, 1.0f, 2.0f);
 	if (shape.vao == 0u)
 		return;
 
@@ -121,7 +119,8 @@ edaf80::Assignment2::run()
 
 
 	//! \todo Create a tesselated sphere and a tesselated torus
-
+	auto const quad_shape = parametric_shapes::createQuad(2u, 2u);
+	auto const sphere_shape = parametric_shapes::createSphere(60u, 0, 2.0f);
 
 	auto polygon_mode = polygon_mode_t::fill;
 
@@ -171,6 +170,15 @@ edaf80::Assignment2::run()
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);
+		}
+		if (inputHandler->GetKeycodeState(GLFW_KEY_X) & JUST_PRESSED) {
+			circle_rings.set_geometry(shape);
+		}
+		if (inputHandler->GetKeycodeState(GLFW_KEY_C) & JUST_PRESSED) {
+			circle_rings.set_geometry(sphere_shape);
+		}
+		if (inputHandler->GetKeycodeState(GLFW_KEY_V) & JUST_PRESSED) {
+			circle_rings.set_geometry(quad_shape);
 		}
 		switch (polygon_mode) {
 			case polygon_mode_t::fill:
