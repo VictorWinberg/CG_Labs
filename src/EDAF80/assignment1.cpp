@@ -104,12 +104,15 @@ edaf80::Assignment1::run()
 	earth.add_texture("diffuse_texture", earth_texture, GL_TEXTURE_2D);
 
 	earth.set_scaling(glm::vec3(0.2f, 0.2f, 0.2f));
-	earth.set_translation(glm::vec3(3.5f, 0, 0));
 
-	auto earth_pivot = Node();
-	sun.add_child(&earth_pivot);
+	auto earth_pivot_r = Node();
+	sun.add_child(&earth_pivot_r);
 
-	earth_pivot.add_child(&earth);
+	auto earth_pivot_t = Node();
+	earth_pivot_t.set_translation(glm::vec3(3.5f, 0, 0));
+	earth_pivot_r.add_child(&earth_pivot_t);
+
+	earth_pivot_t.add_child(&earth);
 
 	//
 	// Create a Moon node
@@ -120,11 +123,11 @@ edaf80::Assignment1::run()
 	moon.set_program(shader, [](GLuint /*program*/){});
 	moon.add_texture("diffuse_texture", moon_texture, GL_TEXTURE_2D);
 
-	moon.set_scaling(glm::vec3(0.3f, 0.3f, 0.3f));
-	moon.set_translation(glm::vec3(2.0f, 0.0f, 0.0f));
+	moon.set_scaling(glm::vec3(0.06f, 0.06f, 0.06f));
+	moon.set_translation(glm::vec3(0.6f, 0.0f, 0.0f));
 
 	auto moon_pivot = Node();
-	earth.add_child(&moon_pivot);
+	earth_pivot_t.add_child(&moon_pivot);
 
 	moon_pivot.add_child(&moon);
 
@@ -228,7 +231,7 @@ edaf80::Assignment1::run()
 
 		sun.rotate_y(- 0.0001f);
 
-		earth_pivot.rotate_y(- 30 * orbitSpeed);
+		earth_pivot_r.rotate_y(- 30 * orbitSpeed);
 		earth.rotate_y(- rotationSpeed / 1);
 
 		moon_pivot.rotate_y(rotationSpeed - orbitSpeed * 0.03f);

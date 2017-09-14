@@ -161,7 +161,7 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 										 0.0f);
 
 			// tangent
-			auto t = glm::vec3(radius * cos_theta * sin_phi, 0, - radius * sin_theta * sin_phi);
+			auto t = glm::vec3(radius * cos_theta, 0, - radius * sin_theta);
 			t = glm::normalize(t);
 			tangents[index] = t;
 
@@ -172,7 +172,7 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 			
 			// normal
 			auto const n = glm::cross(t, b);
-			normals[index] = n;
+			normals[index] = glm::normalize(n);
 			
             theta += dtheta;
 			++index;
@@ -188,9 +188,9 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 	index = 0u;
     for (unsigned int i = 0u; i < res_phi - 1u; ++i) {
         for (unsigned int j = 0u; j < res_theta - 1u; ++j) {
-			indices[index] = glm::uvec3(res_theta * i + j,
+			indices[index] = glm::uvec3(res_theta * i + j + res_theta,
 										res_theta * i + j + 1u,
-										res_theta * i + j + res_theta);
+										res_theta * i + j);
 			++index;
 
 			indices[index] = glm::uvec3(res_theta * i + j + 1u,
@@ -346,7 +346,7 @@ parametric_shapes::createCircleRing(unsigned int const res_radius,
 
 			indices[index] = glm::uvec3(res_radius * i + j,
 			                            res_radius * i + j + res_radius + 1u,
-			                            res_radius * i + j + res_radius);
+										res_radius * i + j + res_radius);
 			++index;
 		}
 	}
