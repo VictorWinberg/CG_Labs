@@ -4,8 +4,8 @@ Debug/
 Release/
 ipch/
 
-# Resources folder
-res/
+# Specific resources subfolders
+res/crysponza/
 res.zip
 
 # Application produced files
