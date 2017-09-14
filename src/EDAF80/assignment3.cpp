@@ -65,7 +65,7 @@ void
 edaf80::Assignment3::run()
 {
 	// Load the sphere geometry
-	auto circle_ring_shape = parametric_shapes::createCircleRing(4u, 60u, 1.0f, 2.0f);
+	auto circle_ring_shape = parametric_shapes::createSphere(20u, 20u, 2.0f);
 	if (circle_ring_shape.vao == 0u) {
 		LogError("Failed to retrieve the circle ring mesh");
 		return;
@@ -81,9 +81,9 @@ edaf80::Assignment3::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
-	if (fallback_shader == 0u) {
-		LogError("Failed to load fallback shader");
+	auto phong_shader = bonobo::createProgram("phong.vert", "phong.frag");
+	if (phong_shader == 0u) {
+		LogError("Failed to load phong shader");
 		return;
 	}
 	GLuint diffuse_shader = 0u, normal_shader = 0u, texcoord_shader = 0u;
@@ -131,7 +131,7 @@ edaf80::Assignment3::run()
 
 	auto circle_ring = Node();
 	circle_ring.set_geometry(circle_ring_shape);
-	circle_ring.set_program(fallback_shader, set_uniforms);
+	circle_ring.set_program(phong_shader, phong_set_uniforms);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -165,7 +165,7 @@ edaf80::Assignment3::run()
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		if (inputHandler->GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
-			circle_ring.set_program(fallback_shader, set_uniforms);
+			circle_ring.set_program(phong_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
 			circle_ring.set_program(diffuse_shader, set_uniforms);
@@ -235,7 +235,7 @@ edaf80::Assignment3::run()
 	normal_shader = 0u;
 	glDeleteProgram(diffuse_shader);
 	diffuse_shader = 0u;
-	glDeleteProgram(fallback_shader);
+	glDeleteProgram(phong_shader);
 	diffuse_shader = 0u;
 }
 
