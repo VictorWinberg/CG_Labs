@@ -86,19 +86,19 @@ edaf80::Assignment3::run()
 		LogError("Failed to load phong shader");
 		return;
 	}
-	GLuint diffuse_shader = 0u, normal_shader = 0u, texcoord_shader = 0u;
-	auto const reload_shaders = [&diffuse_shader,&normal_shader,&texcoord_shader](){
-		if (diffuse_shader != 0u)
-			glDeleteProgram(diffuse_shader);
-		diffuse_shader = bonobo::createProgram("diffuse.vert", "diffuse.frag");
-		if (diffuse_shader == 0u)
-			LogError("Failed to load diffuse shader");
+	GLuint cube_shader = 0u, bump_shader = 0u, texcoord_shader = 0u;
+	auto const reload_shaders = [&cube_shader,&bump_shader,&texcoord_shader](){
+		if (cube_shader != 0u)
+			glDeleteProgram(cube_shader);
+		cube_shader = bonobo::createProgram("cube.vert", "cube.frag");
+		if (cube_shader == 0u)
+			LogError("Failed to load cubeq shader");
 
-		if (normal_shader != 0u)
-			glDeleteProgram(normal_shader);
-		normal_shader = bonobo::createProgram("normal.vert", "normal.frag");
-		if (normal_shader == 0u)
-			LogError("Failed to load normal shader");
+		if (bump_shader != 0u)
+			glDeleteProgram(bump_shader);
+		bump_shader = bonobo::createProgram("bump.vert", "bump.frag");
+		if (bump_shader == 0u)
+			LogError("Failed to load bump shader");
 
 		if (texcoord_shader != 0u)
 			glDeleteProgram(texcoord_shader);
@@ -165,13 +165,13 @@ edaf80::Assignment3::run()
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		if (inputHandler->GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
-			circle_ring.set_program(phong_shader, set_uniforms);
+			circle_ring.set_program(phong_shader, phong_set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
-			circle_ring.set_program(diffuse_shader, set_uniforms);
+			circle_ring.set_program(cube_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
-			circle_ring.set_program(normal_shader, set_uniforms);
+			circle_ring.set_program(bump_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
 			circle_ring.set_program(texcoord_shader, set_uniforms);
@@ -231,12 +231,12 @@ edaf80::Assignment3::run()
 
 	glDeleteProgram(texcoord_shader);
 	texcoord_shader = 0u;
-	glDeleteProgram(normal_shader);
-	normal_shader = 0u;
-	glDeleteProgram(diffuse_shader);
-	diffuse_shader = 0u;
+	glDeleteProgram(bump_shader);
+	bump_shader = 0u;
+	glDeleteProgram(cube_shader);
+	cube_shader = 0u;
 	glDeleteProgram(phong_shader);
-	diffuse_shader = 0u;
+	cube_shader = 0u;
 }
 
 int main()
