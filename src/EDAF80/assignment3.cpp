@@ -87,13 +87,13 @@ edaf80::Assignment3::run()
 		LogError("Failed to load phong shader");
 		return;
 	}
-	GLuint cube_shader = 0u, bump_shader = 0u, texcoord_shader = 0u;
-	auto const reload_shaders = [&cube_shader,&bump_shader,&texcoord_shader](){
+	GLuint cube_shader = 0u, bump_shader = 0u, texture_shader = 0u;
+	auto const reload_shaders = [&cube_shader,&bump_shader,&texture_shader](){
 		if (cube_shader != 0u)
 			glDeleteProgram(cube_shader);
 		cube_shader = bonobo::createProgram("cube.vert", "cube.frag");
 		if (cube_shader == 0u)
-			LogError("Failed to load cubeq shader");
+			LogError("Failed to load cube shader");
 
 		if (bump_shader != 0u)
 			glDeleteProgram(bump_shader);
@@ -101,11 +101,11 @@ edaf80::Assignment3::run()
 		if (bump_shader == 0u)
 			LogError("Failed to load bump shader");
 
-		if (texcoord_shader != 0u)
-			glDeleteProgram(texcoord_shader);
-		texcoord_shader = bonobo::createProgram("texcoord.vert", "texcoord.frag");
-		if (texcoord_shader == 0u)
-			LogError("Failed to load texcoord shader");
+		if (texture_shader != 0u)
+			glDeleteProgram(texture_shader);
+		texture_shader = bonobo::createProgram("default.vert", "default.frag");
+		if (texture_shader == 0u)
+			LogError("Failed to load texture shader");
 	};
 	reload_shaders();
 
@@ -134,12 +134,15 @@ edaf80::Assignment3::run()
 	node.set_geometry(sphere_shape);
 	node.set_program(phong_shader, phong_set_uniforms);
 
+	auto texture = bonobo::loadTexture2D("earth_diffuse.png");
+	node.add_texture("diffuse_texture", texture, GL_TEXTURE_2D);
+
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance:
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-	//glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+//	glCullFace(GL_BACK);
 
 
 	f64 ddeltatime;
@@ -175,7 +178,7 @@ edaf80::Assignment3::run()
 			node.set_program(bump_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
-			node.set_program(texcoord_shader, set_uniforms);
+			node.set_program(texture_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);
@@ -230,8 +233,8 @@ edaf80::Assignment3::run()
 		lastTime = nowTime;
 	}
 
-	glDeleteProgram(texcoord_shader);
-	texcoord_shader = 0u;
+	glDeleteProgram(texture_shader);
+	texture_shader = 0u;
 	glDeleteProgram(bump_shader);
 	bump_shader = 0u;
 	glDeleteProgram(cube_shader);
