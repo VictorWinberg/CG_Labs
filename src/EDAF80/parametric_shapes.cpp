@@ -151,9 +151,9 @@ parametric_shapes::createSphere(unsigned int const res_theta,
             sin_theta = std::sin(theta);
 
 			// vertex
-			vertices[index] = glm::vec3(radius * cos_theta * sin_phi,
+			vertices[index] = glm::vec3(radius * sin_theta * sin_phi,
 										- radius * cos_phi,
-										radius * sin_theta * sin_phi);
+										radius * cos_theta * sin_phi);
             
 			// texture coordinates
 			texcoords[index] = glm::vec3(static_cast<float>(j) / (static_cast<float>(res_theta) - 1.0f),
