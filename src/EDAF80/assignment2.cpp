@@ -107,11 +107,26 @@ edaf80::Assignment2::run()
 
 	// Set the default tensions value; it can always be changed at runtime
 	// through the "Scene Controls" window.
-	float catmull_rom_tension = 0.0f;
+	float catmull_rom_tension = 0.5f;
 
 	// Set whether the default interpolation algorithm should be the linear one;
 	// it can always be changed at runtime through the "Scene Controls" window.
-	bool use_linear = true;
+	bool use_linear = false;
+
+    std::vector<glm::vec3> cp = {
+        glm::vec3( 0,	-5,		-5),
+        glm::vec3( 3,	-3,		-5),
+        glm::vec3( 0,	-1,		-2),
+        glm::vec3(-3,	-0.75f,	-5),
+        glm::vec3( 0,	-0.50f,	-8),
+        glm::vec3( 3,	 0.50f,	-5),
+        glm::vec3( 0,	 0.75f,	-2),
+        glm::vec3(-3,	 1,		-5),
+        glm::vec3( 0,	 3,		-8),
+        glm::vec3( 0,	 5,		-5)
+    }; // N control points
+    float path_pos = 0.0f;
+    float pos_velocity = 0.05f;
 
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
@@ -192,11 +207,26 @@ edaf80::Assignment2::run()
 				break;
 		}
 
-		circle_rings.rotate_y(0.01f);
-
+		circle_rings.rotate_y(0.05f);
 
 		//! \todo Interpolate the movement of a shape between various
 		//!        control points
+
+		// Main loop:
+		int i = floor(path_pos); // floor returns closest lower integer
+		// use indices (e.g.) i, i+1, i+2, i+3 to retrieve control
+		// points from cp[].
+		// make sure indices wrap: 0, 1 … N-1, 0, 1…
+		// run interpolation
+		// update the animated object
+		path_pos += pos_velocity; // step forward
+
+		float x = path_pos - i;
+
+		if(use_linear)
+			circle_rings.set_translation(interpolation::evalLERP(cp[i%10], cp[(i+1)%10], x));
+		else
+			circle_rings.set_translation(interpolation::evalCatmullRom(cp[i%10], cp[(i+1)%10], cp[(i+2)%10], cp[(i+3)%10], catmull_rom_tension, x));
 
 
 		auto const window_size = window->GetDimensions();
