@@ -20,6 +20,6 @@ void main()
 	vec3 L = normalize(light_position - fs_in.vertex);
 	vec3 V = normalize(camera_position - fs_in.vertex);
 	vec3 diffuse_shading = diffuse * fs_in.normal * L;
-	vec3 specular_shading = specular * pow(reflect(-L, fs_in.normal) * V, vec3(shininess));
+	vec3 specular_shading = specular * /*pow(*/reflect(-L, fs_in.normal) * V/*, vec3(shininess))*/;
 	frag_color = vec4(ambient + diffuse_shading + specular_shading, 1.0);
 }
