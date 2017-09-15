@@ -65,9 +65,10 @@ void
 edaf80::Assignment3::run()
 {
 	// Load the sphere geometry
-	auto circle_ring_shape = parametric_shapes::createSphere(20u, 20u, 2.0f);
-	if (circle_ring_shape.vao == 0u) {
-		LogError("Failed to retrieve the circle ring mesh");
+	auto sphere_shape = parametric_shapes::createSphere(20u, 20u, 2.0f);
+	auto cube_map_shape = parametric_shapes::createSphere(20u, 20u, 20.0f);
+	if (cube_map_shape.vao == 0u || sphere_shape.vao == 0u) {
+		LogError("Failed to retrieve the sphere mesh");
 		return;
 	}
 
@@ -129,9 +130,9 @@ edaf80::Assignment3::run()
 
 	auto polygon_mode = polygon_mode_t::fill;
 
-	auto circle_ring = Node();
-	circle_ring.set_geometry(circle_ring_shape);
-	circle_ring.set_program(phong_shader, phong_set_uniforms);
+	auto node = Node();
+	node.set_geometry(sphere_shape);
+	node.set_program(phong_shader, phong_set_uniforms);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -165,16 +166,16 @@ edaf80::Assignment3::run()
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		if (inputHandler->GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
-			circle_ring.set_program(phong_shader, phong_set_uniforms);
+			node.set_program(phong_shader, phong_set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
-			circle_ring.set_program(cube_shader, set_uniforms);
+			node.set_program(cube_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
-			circle_ring.set_program(bump_shader, set_uniforms);
+			node.set_program(bump_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
-			circle_ring.set_program(texcoord_shader, set_uniforms);
+			node.set_program(texcoord_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);
@@ -202,7 +203,7 @@ edaf80::Assignment3::run()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		circle_ring.render(mCamera.GetWorldToClipMatrix(), circle_ring.get_transform());
+		node.render(mCamera.GetWorldToClipMatrix(), node.get_transform());
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
