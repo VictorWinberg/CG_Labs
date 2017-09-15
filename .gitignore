@@ -5,7 +5,7 @@ Release/
 ipch/
 
 # Specific resources subfolders
-res/crysponza/
+res/
 res.zip
 
 # Application produced files

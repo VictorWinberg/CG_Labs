@@ -33,6 +33,8 @@ later.
 The different resources used in the assignments, textures, object files, can
 be found in `this ZIP file`_, which should be automatically retrieved by CMake.
 
+My modified resources can be found in `my ZIP file`_.
+
 Building
 ========
 
@@ -132,4 +134,5 @@ Licence
 .. _cmake-generators(7): https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
 .. _Dear ImGui’s licence: Dear_ImGui_LICENCE
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip
+.. _my ZIP file: https://www.dropbox.com/s/ozij8j9ifdrnxbg/res.zip?dl=0
 .. _the UNLICENCE file: UNLICENCE
