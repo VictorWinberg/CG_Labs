@@ -15,7 +15,7 @@ out vec4 frag_color;
 
 void main()
 {
-	vec3 n = fs_in.normal;
+	vec3 n = normalize(fs_in.normal);
 	vec3 L = normalize(fs_in.light_vector);
 	vec3 V = normalize(fs_in.camera_vector);
 	vec3 R = normalize(reflect(-L, n));

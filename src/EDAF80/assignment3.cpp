@@ -109,16 +109,16 @@ edaf80::Assignment3::run()
 	};
 	reload_shaders();
 
-	auto light_position = glm::vec3(-2.0f, 4.0f, 2.0f);
+	auto light_position = glm::vec3(20.0f, 20.0f, 20.0f);
 	auto const set_uniforms = [&light_position](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 	};
 
 	auto camera_position = mCamera.mWorld.GetTranslation();
-	auto ambient = glm::vec3(0.2f, 0.2f, 0.2f);
-	auto diffuse = glm::vec3(0.7f, 0.2f, 0.4f);
-	auto specular = glm::vec3(1.0f, 1.0f, 1.0f);
-	auto shininess = 1.0f;
+	auto ambient = glm::vec3(0.0f, 0.0f, 0.0f);
+	auto diffuse = glm::vec3(0.8f, 0.6f, 0.2f);
+	auto specular = glm::vec3(0.3f, 0.3f, 0.3f);
+	auto shininess = 100.0f;
 	auto const phong_set_uniforms = [&light_position,&camera_position,&ambient,&diffuse,&specular,&shininess](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
