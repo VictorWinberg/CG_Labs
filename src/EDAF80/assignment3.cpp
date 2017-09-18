@@ -136,8 +136,10 @@ edaf80::Assignment3::run()
 
 //	auto texture = bonobo::loadTexture2D("earth_diffuse.png");
 	std::string cubemap = "cloudyhills";
-	auto texture = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
-	node.add_texture("cubeMapName", texture, GL_TEXTURE_CUBE_MAP);
+//	auto texture = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
+//	node.add_texture("cubeMapName", texture, GL_TEXTURE_CUBE_MAP);
+	auto earth_texture = bonobo::loadTexture2D("earth_diffuse.png");
+	node.add_texture("diffuse_texture", earth_texture, GL_TEXTURE_2D);
 
 	glEnable(GL_DEPTH_TEST);
 
