@@ -134,10 +134,10 @@ edaf80::Assignment3::run()
 	node.set_geometry(sphere_shape);
 	node.set_program(phong_shader, phong_set_uniforms);
 
-//	auto texture = bonobo::loadTexture2D("earth_diffuse.png");
 	std::string cubemap = "cloudyhills";
 	auto texture = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
 	node.add_texture("cube_map_texture", texture, GL_TEXTURE_CUBE_MAP);
+
 	auto earth_diffuse = bonobo::loadTexture2D("earth_diffuse.png");
 	node.add_texture("diffuse_texture", earth_diffuse, GL_TEXTURE_2D);
 	auto earth_bump = bonobo::loadTexture2D("earth_bump.png");
