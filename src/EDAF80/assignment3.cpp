@@ -140,6 +140,8 @@ edaf80::Assignment3::run()
 	node.add_texture("cube_map_texture", texture, GL_TEXTURE_CUBE_MAP);
 	auto earth_texture = bonobo::loadTexture2D("earth_diffuse.png");
 	node.add_texture("diffuse_texture", earth_texture, GL_TEXTURE_2D);
+	auto earth_bump_texture = bonobo::loadTexture2D("earth_bump.png");
+	node.add_texture("bump_texture", earth_bump_texture, GL_TEXTURE_2D);
 
 	glEnable(GL_DEPTH_TEST);
 
