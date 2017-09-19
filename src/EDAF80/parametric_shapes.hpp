@@ -13,6 +13,16 @@ namespace parametric_shapes
 	//!         data
 	bonobo::mesh_data createQuad(unsigned int width, unsigned int height);
 
+	//! \brief Create a quad with specified resolution.
+	//!
+	//! @param res_width the resolution of the width
+	//! @param res_depth the resolution of the depth
+	//! @param width the width of the quad
+	//! @param depth the depth of the quad
+	//! @return wrapper around OpenGL objects' name containing the geometry
+	//!         data
+	bonobo::mesh_data createQuad(unsigned int res_width, unsigned int res_depth, unsigned int width, unsigned int depth);
+
 	//! \brief Create a sphere for some tesselation level and make it
 	//!        available to OpenGL.
 	//!

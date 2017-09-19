@@ -1,4 +1,5 @@
 #include "assignment4.hpp"
+#include "parametric_shapes.hpp"
 
 #include "config.hpp"
 #include "external/glad/glad.h"
@@ -9,6 +10,7 @@
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
+#include "core/node.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
@@ -62,17 +64,30 @@ edaf80::Assignment4::run()
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto const reload_shaders = [](){
+	GLuint water_shader = 0u;
+	auto const reload_shaders = [&water_shader](){
 		//
 		// Todo: Insert the creation of other shader programs.
 		//       (Check how it was done in assignment 3.)
 		//
+		if (water_shader != 0u)
+			glDeleteProgram(water_shader);
+		water_shader = bonobo::createProgram("water.vert", "water.frag");
+		if (water_shader == 0u)
+			LogError("Failed to load water shader");
 	};
 	reload_shaders();
 
 	//
 	// Todo: Load your geometry
 	//
+	int size = 100;
+	auto quad_shape = parametric_shapes::createQuad(size, size, size, size);
+
+	auto node = Node();
+	node.set_geometry(quad_shape);
+	node.set_program(water_shader, [](GLuint /*program*/) {});
+	node.set_translation(glm::vec3(-size/2.0, -2, -size/2.0));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -112,7 +127,6 @@ edaf80::Assignment4::run()
 			reload_shaders();
 		}
 
-
 		auto const window_size = window->GetDimensions();
 		glViewport(0, 0, window_size.x, window_size.y);
 		glClearDepthf(1.0f);
@@ -122,6 +136,7 @@ edaf80::Assignment4::run()
 		//
 		// Todo: Render all your geometry here.
 		//
+		node.render(mCamera.GetWorldToClipMatrix(), node.get_transform());
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -142,6 +157,8 @@ edaf80::Assignment4::run()
 	// Todo: Do not forget to delete your shader programs, by calling
 	//       `glDeleteProgram($your_shader_program)` for each of them.
 	//
+	glDeleteProgram(water_shader);
+	water_shader = 0u;
 }
 
 int main()
