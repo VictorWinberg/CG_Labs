@@ -1,18 +1,20 @@
 #version 410
 
 uniform vec3 ambient;
-uniform vec3 diffuse;
+// uniform vec3 diffuse;
 uniform vec3 specular;
 uniform float shininess;
 
 uniform sampler2D diffuse_texture;
-uniform int has_textures;
+uniform sampler2D bump_texture;
 
 in VS_OUT {
 	vec3 normal;
+	vec2 texcoord;
+	vec3 tangent;
+	vec3 binormal;
 	vec3 light_vector;
 	vec3 camera_vector;
-	vec2 texcoord;
 } fs_in;
 
 out vec4 frag_color;
@@ -22,16 +24,27 @@ vec4 diffuse_color;
 void main()
 {
 	vec3 n = normalize(fs_in.normal);
+	vec3 T = normalize(fs_in.tangent);
+	vec3 B = normalize(fs_in.binormal);
 	vec3 L = normalize(fs_in.light_vector);
 	vec3 V = normalize(fs_in.camera_vector);
-	vec3 R = normalize(reflect(-L, n));
 
-	if (has_textures != 0)
-		diffuse_color = texture(diffuse_texture, fs_in.texcoord);
-	else
-		diffuse_color = vec4(diffuse, 1.0);
+	vec3 normal = 2.0 * texture(bump_texture, fs_in.texcoord).rgb - 1;
+	normal = normalize(normal);
 
-	vec4 diffuse_shading = diffuse_color * dot(n, L);
-	vec3 specular_shading = specular * pow(dot(R, V), shininess);
-	frag_color = vec4(ambient, 0) + diffuse_shading + vec4(specular_shading, 0);
+	mat3 vector_transform;
+	vector_transform[0] = T;
+	vector_transform[1] = B;
+	vector_transform[2] = n;
+	normal = vector_transform * normal;
+
+	vec3 R = normalize(reflect(-L, normal));
+
+	vec4 texture_color = texture(diffuse_texture, fs_in.texcoord);
+
+	vec3 fdiffuse = max(dot(normal, L), 0.0) * texture_color.rgb;
+	vec3 fspecular = specular * pow(max(dot(R, V), 0.0), shininess);
+
+	frag_color.rgb = ambient + fdiffuse + fspecular;
+	frag_color.w = 0;
 }
