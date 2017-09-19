@@ -31,7 +31,7 @@ void main()
 	else
 		diffuse_color = vec4(diffuse, 1.0);
 
-	vec4 diffuse_shading = diffuse_color * dot(n, L);
-	vec3 specular_shading = specular * pow(dot(R, V), shininess);
+	vec4 diffuse_shading = diffuse_color * max(dot(n, L), 0.0);
+	vec3 specular_shading = specular * pow(max(dot(R, V), 0.0), shininess);
 	frag_color = vec4(ambient, 0) + diffuse_shading + vec4(specular_shading, 0);
 }
