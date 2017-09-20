@@ -89,6 +89,9 @@ edaf80::Assignment4::run()
 	node.set_program(water_shader, [](GLuint /*program*/) {});
 	node.set_translation(glm::vec3(-size/2.0, -2, -size/2.0));
 
+	auto water_texture = bonobo::loadTexture2D("waves.png");
+	node.add_texture("bump_texture", water_texture, GL_TEXTURE_2D);
+
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance:

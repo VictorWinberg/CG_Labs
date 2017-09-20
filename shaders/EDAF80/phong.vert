@@ -20,10 +20,10 @@ out VS_OUT {
 
 void main()
 {
-	vec3 vertex = vec3(vertex_model_to_world * vec4(vertex, 1.0));
+	vec3 vertex_in_world = vec3(vertex_model_to_world * vec4(vertex, 1.0));
 	vs_out.normal = vec3(normal_model_to_world * vec4(normal, 0.0));
-	vs_out.light_vector = light_position - vertex;
-	vs_out.camera_vector = camera_position - vertex;
+	vs_out.light_vector = light_position - vertex_in_world;
+	vs_out.camera_vector = camera_position - vertex_in_world;
 	vs_out.texcoord = vec2(texcoord.x, texcoord.y);
 
 	gl_Position = vertex_world_to_clip * vertex_model_to_world * vec4(vertex, 1.0);
