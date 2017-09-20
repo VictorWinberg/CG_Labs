@@ -24,25 +24,25 @@ vec4 diffuse_color;
 void main()
 {
 	vec3 n = normalize(fs_in.normal);
-	vec3 T = normalize(fs_in.tangent);
-	vec3 B = normalize(fs_in.binormal);
+	vec3 t = normalize(fs_in.tangent);
+	vec3 b = normalize(fs_in.binormal);
 	vec3 L = normalize(fs_in.light_vector);
 	vec3 V = normalize(fs_in.camera_vector);
 
-	vec3 normal = 2.0 * texture(bump_texture, fs_in.texcoord).rgb - 1;
-	normal = normalize(normal);
+	vec3 n_bump = 2.0 * texture(bump_texture, fs_in.texcoord).rgb - 1;
+	n_bump = normalize(n_bump);
 
 	mat3 vector_transform;
-	vector_transform[0] = T;
-	vector_transform[1] = B;
+	vector_transform[0] = t;
+	vector_transform[1] = b;
 	vector_transform[2] = n;
-	normal = vector_transform * normal;
+	vec3 n_prime = vector_transform * n_bump;
 
-	vec3 R = normalize(reflect(-L, normal));
+	vec3 R = normalize(reflect(-L, n_prime));
 
 	vec4 texture_color = texture(diffuse_texture, fs_in.texcoord);
 
-	vec3 fdiffuse = max(dot(normal, L), 0.0) * texture_color.rgb;
+	vec3 fdiffuse = max(dot(n_prime, L), 0.0) * texture_color.rgb;
 	vec3 fspecular = specular * pow(max(dot(R, V), 0.0), shininess);
 
 	frag_color.rgb = ambient + fdiffuse + fspecular;
