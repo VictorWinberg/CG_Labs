@@ -118,7 +118,7 @@ edaf80::Assignment3::run()
 	auto ambient = glm::vec3(0.0f, 0.0f, 0.0f);
 	auto diffuse = glm::vec3(0.8f, 0.6f, 0.2f);
 	auto specular = glm::vec3(0.3f, 0.3f, 0.3f);
-	auto shininess = 100.0f;
+	auto shininess = 2.0f;
 	auto const phong_set_uniforms = [&light_position,&camera_position,&ambient,&diffuse,&specular,&shininess](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
@@ -138,10 +138,10 @@ edaf80::Assignment3::run()
 	auto texture = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
 	node.add_texture("cube_map_texture", texture, GL_TEXTURE_CUBE_MAP);
 
-	auto earth_diffuse = bonobo::loadTexture2D("earth_diffuse.png");
-	node.add_texture("diffuse_texture", earth_diffuse, GL_TEXTURE_2D);
-	auto earth_bump = bonobo::loadTexture2D("earth_bump.png");
-	node.add_texture("bump_texture", earth_bump, GL_TEXTURE_2D);
+	auto fieldstone_diffuse = bonobo::loadTexture2D("fieldstone_diffuse.png");
+	node.add_texture("diffuse_texture", fieldstone_diffuse, GL_TEXTURE_2D);
+	auto fieldstone_bump = bonobo::loadTexture2D("fieldstone_bump.png");
+	node.add_texture("bump_texture", fieldstone_bump, GL_TEXTURE_2D);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -181,7 +181,7 @@ edaf80::Assignment3::run()
 			node.set_program(cube_shader, set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
-			node.set_program(bump_shader, set_uniforms);
+			node.set_program(bump_shader, phong_set_uniforms);
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
 			node.set_program(texture_shader, set_uniforms);
