@@ -65,8 +65,8 @@ void
 edaf80::Assignment3::run()
 {
 	// Load the sphere geometry
-	auto sphere_shape = parametric_shapes::createSphere(20u, 20u, 2.0f);
-	auto cube_map_shape = parametric_shapes::createSphere(20u, 20u, 20.0f);
+	auto sphere_shape = parametric_shapes::createSphere(100u, 100u, 2.0f);
+	auto cube_map_shape = parametric_shapes::createSphere(100u, 100u, 20.0f);
 	if (cube_map_shape.vao == 0u || sphere_shape.vao == 0u) {
 		LogError("Failed to retrieve the sphere mesh");
 		return;
@@ -134,20 +134,26 @@ edaf80::Assignment3::run()
 	node.set_geometry(sphere_shape);
 	node.set_program(phong_shader, phong_set_uniforms);
 
-	std::string cubemap = "cloudyhills";
-	auto texture = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
-	node.add_texture("cube_map_texture", texture, GL_TEXTURE_CUBE_MAP);
+	std::string texture_name = "stone47";
+	auto texture_diffuse = bonobo::loadTexture2D(texture_name + "_diffuse.png");
+	node.add_texture("diffuse_texture", texture_diffuse, GL_TEXTURE_2D);
+	auto texture_bump = bonobo::loadTexture2D(texture_name + "_bump.png");
+	node.add_texture("bump_texture", texture_bump, GL_TEXTURE_2D);
 
-	auto fieldstone_diffuse = bonobo::loadTexture2D("fieldstone_diffuse.png");
-	node.add_texture("diffuse_texture", fieldstone_diffuse, GL_TEXTURE_2D);
-	auto fieldstone_bump = bonobo::loadTexture2D("fieldstone_bump.png");
-	node.add_texture("bump_texture", fieldstone_bump, GL_TEXTURE_2D);
+	auto skybox = Node();
+	skybox.set_geometry(cube_map_shape);
+	skybox.set_program(cube_shader, set_uniforms);
+
+	std::string cubemap = "cloudyhills";
+	auto texture_cubemap = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
+	skybox.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
+
 
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance:
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
+//	glEnable(GL_CULL_FACE);
+//	glCullFace(GL_FRONT);
 //	glCullFace(GL_BACK);
 
 
@@ -213,6 +219,7 @@ edaf80::Assignment3::run()
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 		node.render(mCamera.GetWorldToClipMatrix(), node.get_transform());
+		skybox.render(mCamera.GetWorldToClipMatrix(), skybox.get_transform());
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
