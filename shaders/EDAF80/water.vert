@@ -66,13 +66,13 @@ void main()
 	float dG_2dz = dG_2 * D_2.z;
 
 	// --- ALL WAVES ---
-	vec4 G = G_1 + G_2;
-	float dGdx = dG_1dx + dG_2dx;
-	float dGdz = dG_1dz + dG_2dz;
+	vec4 H = G_1 + G_2;
+	float dHdx = dG_1dx + dG_2dx;
+	float dHdz = dG_1dz + dG_2dz;
 
-	vs_out.normal = vec3(-dGdx, 1.0, -dGdz);
-	vs_out.binormal = vec3(1.0, dGdx, 0.0);
-	vs_out.tangent = vec3(0.0, dGdz, 1.0);
+	vs_out.normal = vec3(-dHdx, 1.0, -dHdz);
+	vs_out.binormal = vec3(1.0, dHdx, 0.0);
+	vs_out.tangent = vec3(0.0, dHdz, 1.0);
 
-	gl_Position = vertex_world_to_clip * G;
+	gl_Position = vertex_world_to_clip * H;
 }
