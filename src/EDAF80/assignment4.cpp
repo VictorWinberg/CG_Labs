@@ -18,6 +18,8 @@
 
 #include "external/glad/glad.h"
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <stdexcept>
 
@@ -78,6 +80,26 @@ edaf80::Assignment4::run()
 	};
 	reload_shaders();
 
+	auto light_position = glm::vec3(20.0f, 20.0f, 20.0f);
+	auto camera_position = mCamera.mWorld.GetTranslation();
+	auto amplitude = 1.0f;
+	auto direction = glm::vec3(-1, 0, 0);
+	auto frequency = 0.1f;
+	auto phase = 0.5f;
+	auto sharpness = 2.0f;
+	auto time = 0.0f;
+
+	auto const set_uniforms = [&light_position,&camera_position,&amplitude,&direction,&frequency,&phase,&sharpness,&time](GLuint program){
+		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
+		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
+		glUniform1f(glGetUniformLocation(program, "amplitude"), amplitude);
+		glUniform3fv(glGetUniformLocation(program, "direction"), 1, glm::value_ptr(direction));
+		glUniform1f(glGetUniformLocation(program, "frequency"), frequency);
+		glUniform1f(glGetUniformLocation(program, "phase"), phase);
+		glUniform1f(glGetUniformLocation(program, "sharpness"), sharpness);
+		glUniform1f(glGetUniformLocation(program, "time"), time);
+	};
+
 	//
 	// Todo: Load your geometry
 	//
@@ -86,7 +108,7 @@ edaf80::Assignment4::run()
 
 	auto node = Node();
 	node.set_geometry(quad_shape);
-	node.set_program(water_shader, [](GLuint /*program*/) {});
+	node.set_program(water_shader, set_uniforms);
 	node.set_translation(glm::vec3(-size/2.0, -2, -size/2.0));
 
 	auto water_texture = bonobo::loadTexture2D("waves.png");
@@ -149,6 +171,22 @@ edaf80::Assignment4::run()
 		// Todo: If you want a custom ImGUI window, you can set it up
 		//       here
 		//
+		bool opened = ImGui::Begin("Scene Control", &opened, ImVec2(300, 100), -1.0f, 0);
+		if (opened) {
+			ImGui::SliderFloat("Amplitude", &amplitude, 0.0f, 5.0f);
+			ImGui::SliderFloat3("Direction", glm::value_ptr(direction), -1.0f, 1.0f);
+			ImGui::SliderFloat("Frequency", &frequency, 0.0f, 5.0f);
+			ImGui::SliderFloat("Phase", &phase, 0.0f, 5.0f);
+			ImGui::SliderFloat("Sharpness", &sharpness, 0.0f, 5.0f);
+			ImGui::SliderFloat("Time", &time, 0.0f, 100.0f);
+			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
+		}
+		ImGui::End();
+
+		ImGui::Begin("Render Time", &opened, ImVec2(120, 50), -1.0f, 0);
+		if (opened)
+			ImGui::Text("%.3f ms", ddeltatime);
+		ImGui::End();
 
 		ImGui::Render();
 

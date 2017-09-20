@@ -13,6 +13,13 @@ uniform mat4 vertex_world_to_clip;
 uniform vec3 light_position;
 uniform vec3 camera_position;
 
+uniform float amplitude;
+uniform vec3 direction;
+uniform float frequency;
+uniform float phase;
+uniform float sharpness;
+uniform float time;
+
 out VS_OUT {
 	vec3 normal;
 	vec2 texcoord;
