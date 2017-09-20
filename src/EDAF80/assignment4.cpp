@@ -82,22 +82,42 @@ edaf80::Assignment4::run()
 
 	auto light_position = glm::vec3(20.0f, 20.0f, 20.0f);
 	auto camera_position = mCamera.mWorld.GetTranslation();
-	auto amplitude = 1.0f;
-	auto direction = glm::vec3(-1, 0, 0);
-	auto frequency = 0.1f;
-	auto phase = 0.5f;
-	auto sharpness = 2.0f;
+	
+	int nbrWaves = 2;
+
+	struct wave {
+		float amplitude;
+		glm::vec3 direction;
+		float frequency;
+		float phase;
+		float sharpness;
+	} waves[nbrWaves];
+
+	waves[0].amplitude = 1.0f;
+	waves[0].direction = glm::vec3(-1, 0, 0);
+	waves[0].frequency = 0.2f;
+	waves[0].phase = 0.5f;
+	waves[0].sharpness = 2.0f;
+
+	waves[1].amplitude = 0.5f;
+	waves[1].direction = glm::vec3(-7, 0, 0.7);
+	waves[1].frequency = 0.4f;
+	waves[1].phase = 1.3f;
+	waves[1].sharpness = 2.0f;
+
 	auto speed = 10.0f;
 	auto time = 0.0f;
 
-	auto const set_uniforms = [&light_position,&camera_position,&amplitude,&direction,&frequency,&phase,&sharpness,&time,&speed](GLuint program){
+	auto const set_uniforms = [&light_position,&camera_position,&waves,&time,&speed,&nbrWaves](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
-		glUniform1f(glGetUniformLocation(program, "amplitude"), amplitude);
-		glUniform3fv(glGetUniformLocation(program, "direction"), 1, glm::value_ptr(direction));
-		glUniform1f(glGetUniformLocation(program, "frequency"), frequency);
-		glUniform1f(glGetUniformLocation(program, "phase"), phase);
-		glUniform1f(glGetUniformLocation(program, "sharpness"), sharpness);
+		for (int i = 0; i < nbrWaves; i++) {
+			glUniform1f(glGetUniformLocation(program, ("A_"+std::to_string(i+1)).c_str()), waves[i].amplitude);
+			glUniform3fv(glGetUniformLocation(program, ("D_"+std::to_string(i+1)).c_str()), 1, glm::value_ptr(waves[i].direction));
+			glUniform1f(glGetUniformLocation(program, ("f_"+std::to_string(i+1)).c_str()), waves[i].frequency);
+			glUniform1f(glGetUniformLocation(program, ("p_"+std::to_string(i+1)).c_str()), waves[i].phase);
+			glUniform1f(glGetUniformLocation(program, ("k_"+std::to_string(i+1)).c_str()), waves[i].sharpness);
+		}
 		glUniform1f(glGetUniformLocation(program, "time"), time);
 		glUniform1f(glGetUniformLocation(program, "speed"), speed);
 	};
@@ -174,13 +194,23 @@ edaf80::Assignment4::run()
 		// Todo: If you want a custom ImGUI window, you can set it up
 		//       here
 		//
-		bool opened = ImGui::Begin("Scene Control", &opened, ImVec2(300, 100), -1.0f, 0);
+		bool opened;
+		for (int i = 0; i < nbrWaves; i++) {
+			auto title = "Wave Control ";
+			auto index = std::to_string(i+1);
+			opened = ImGui::Begin((title + index).c_str(), &opened, ImVec2(300, 200), -1.0f, 0);
+			if (opened) {
+				ImGui::SliderFloat("Amplitude", &waves[i].amplitude, 0.0f, 5.0f);
+				ImGui::SliderFloat3("Direction", glm::value_ptr(waves[i].direction), -1.0f, 1.0f);
+				ImGui::SliderFloat("Frequency", &waves[i].frequency, 0.0f, 5.0f);
+				ImGui::SliderFloat("Phase", &waves[i].phase, 0.0f, 5.0f);
+				ImGui::SliderFloat("Sharpness", &waves[i].sharpness, 0.0f, 5.0f);
+			}
+			ImGui::End();
+		}
+		
+		ImGui::Begin("Enviroment Control", &opened, ImVec2(120, 50), -1.0f, 0);
 		if (opened) {
-			ImGui::SliderFloat("Amplitude", &amplitude, 0.0f, 5.0f);
-			ImGui::SliderFloat3("Direction", glm::value_ptr(direction), -1.0f, 1.0f);
-			ImGui::SliderFloat("Frequency", &frequency, 0.0f, 5.0f);
-			ImGui::SliderFloat("Phase", &phase, 0.0f, 5.0f);
-			ImGui::SliderFloat("Sharpness", &sharpness, 0.0f, 5.0f);
 			ImGui::SliderFloat("Speed", &speed, 0.0f, 50.0f);
 			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
 		}
@@ -188,8 +218,8 @@ edaf80::Assignment4::run()
 
 		ImGui::Begin("Render Time", &opened, ImVec2(120, 50), -1.0f, 0);
 		if (opened) {
+			ImGui::Text("Time: %.3f s", time);
 			ImGui::Text("dT: %.3f ms", ddeltatime);
-			ImGui::Text("T: %.3f s", time);
 		}
 		ImGui::End();
 

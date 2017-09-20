@@ -13,11 +13,11 @@ uniform mat4 vertex_world_to_clip;
 uniform vec3 light_position;
 uniform vec3 camera_position;
 
-uniform float amplitude;
-uniform vec3 direction;
-uniform float frequency;
-uniform float phase;
-uniform float sharpness;
+uniform float A_1;
+uniform vec3 D_1;
+uniform float f_1;
+uniform float p_1;
+uniform float k_1;
 uniform float time;
 
 out VS_OUT {
@@ -39,9 +39,9 @@ void main()
 	vs_out.light_vector = light_position - vertex_in_world;
 	vs_out.camera_vector = camera_position - vertex_in_world;
 
-	float next_pos = direction.x * vertex_in_world.x + direction.z * vertex_in_world.z;
-	float next_sin = sin(next_pos * frequency + time * phase);
-	float height = amplitude * pow(next_sin * 0.5 + 0.5, sharpness);
+	float next_pos = D_1.x * vertex_in_world.x + D_1.z * vertex_in_world.z;
+	float next_sin = sin(next_pos * f_1 + time * p_1);
+	float height = A_1 * pow(next_sin * 0.5 + 0.5, k_1);
 	vertex_in_world.y = height;
 
 	gl_Position = vertex_world_to_clip * vec4(vertex_in_world, 1.0);
