@@ -132,15 +132,15 @@ parametric_shapes::createQuad(unsigned int res_width, unsigned int res_depth, un
 
 	float w = 0.0f,
 		dw = width / (static_cast<float>(res_width) - 1.0f);
-	float h = 0.0f,
-		dh = depth / (static_cast<float>(res_depth) - 1.0f);
+	float d = 0.0f,
+		dd = depth / (static_cast<float>(res_depth) - 1.0f);
 
 	size_t index = 0u;
 	for (unsigned int i = 0; i < res_depth; i++) {
 		w = 0.0f;
 		for (unsigned int j = 0; j < res_width; j++) {
 			// vertex
-			vertices[index] = glm::vec3(w, 0, h);
+			vertices[index] = glm::vec3(w, 0, d);
 
 			//texture coordinates
 			texcoords[index] = glm::vec3(static_cast<float>(j) / (static_cast<float>(res_width) - 1.0f),
@@ -164,7 +164,7 @@ parametric_shapes::createQuad(unsigned int res_width, unsigned int res_depth, un
 			++index;
 			w += dw;
 		}
-		h += dh;
+		d += dd;
 	}
 
 	auto indices = std::vector<glm::uvec3>(2u * (res_width - 1u) * (res_depth - 1u));
