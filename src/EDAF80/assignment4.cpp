@@ -55,7 +55,7 @@ edaf80::Assignment4::run()
 	FPSCameraf mCamera(bonobo::pi / 4.0f,
 	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
 	                   0.01f, 1000.0f);
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 6.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 0.025;
 	window->SetCamera(&mCamera);
@@ -87,9 +87,10 @@ edaf80::Assignment4::run()
 	auto frequency = 0.1f;
 	auto phase = 0.5f;
 	auto sharpness = 2.0f;
+	auto speed = 10.0f;
 	auto time = 0.0f;
 
-	auto const set_uniforms = [&light_position,&camera_position,&amplitude,&direction,&frequency,&phase,&sharpness,&time](GLuint program){
+	auto const set_uniforms = [&light_position,&camera_position,&amplitude,&direction,&frequency,&phase,&sharpness,&time,&speed](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
 		glUniform1f(glGetUniformLocation(program, "amplitude"), amplitude);
@@ -98,6 +99,7 @@ edaf80::Assignment4::run()
 		glUniform1f(glGetUniformLocation(program, "phase"), phase);
 		glUniform1f(glGetUniformLocation(program, "sharpness"), sharpness);
 		glUniform1f(glGetUniformLocation(program, "time"), time);
+		glUniform1f(glGetUniformLocation(program, "speed"), speed);
 	};
 
 	//
@@ -109,7 +111,7 @@ edaf80::Assignment4::run()
 	auto node = Node();
 	node.set_geometry(quad_shape);
 	node.set_program(water_shader, set_uniforms);
-	node.set_translation(glm::vec3(-size/2.0, -2, -size/2.0));
+	node.set_translation(glm::vec3(-size/2.0, 0, -size/2.0));
 
 	auto water_texture = bonobo::loadTexture2D("waves.png");
 	node.add_texture("bump_texture", water_texture, GL_TEXTURE_2D);
@@ -130,6 +132,7 @@ edaf80::Assignment4::run()
 	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
 		nowTime = GetTimeMilliseconds();
 		ddeltatime = nowTime - lastTime;
+		time += speed * ddeltatime / 1000.0f;
 		if (nowTime > fpsNextTick) {
 			fpsNextTick += 1000.0;
 			fpsSamples = 0;
@@ -178,14 +181,16 @@ edaf80::Assignment4::run()
 			ImGui::SliderFloat("Frequency", &frequency, 0.0f, 5.0f);
 			ImGui::SliderFloat("Phase", &phase, 0.0f, 5.0f);
 			ImGui::SliderFloat("Sharpness", &sharpness, 0.0f, 5.0f);
-			ImGui::SliderFloat("Time", &time, 0.0f, 100.0f);
+			ImGui::SliderFloat("Speed", &speed, 0.0f, 50.0f);
 			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
 		}
 		ImGui::End();
 
 		ImGui::Begin("Render Time", &opened, ImVec2(120, 50), -1.0f, 0);
-		if (opened)
-			ImGui::Text("%.3f ms", ddeltatime);
+		if (opened) {
+			ImGui::Text("dT: %.3f ms", ddeltatime);
+			ImGui::Text("T: %.3f s", time);
+		}
 		ImGui::End();
 
 		ImGui::Render();

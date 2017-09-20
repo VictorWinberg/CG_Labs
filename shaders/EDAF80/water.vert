@@ -39,5 +39,10 @@ void main()
 	vs_out.light_vector = light_position - vertex_in_world;
 	vs_out.camera_vector = camera_position - vertex_in_world;
 
-	gl_Position = vertex_world_to_clip * vertex_model_to_world * vec4(vertex, 1.0);
+	float next_pos = direction.x * vertex_in_world.x + direction.z * vertex_in_world.z;
+	float next_sin = sin(next_pos * frequency + time * phase);
+	float height = amplitude * pow(next_sin * 0.5 + 0.5, sharpness);
+	vertex_in_world.y = height;
+
+	gl_Position = vertex_world_to_clip * vec4(vertex_in_world, 1.0);
 }
