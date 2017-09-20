@@ -18,7 +18,14 @@ uniform vec3 D_1;
 uniform float f_1;
 uniform float p_1;
 uniform float k_1;
-uniform float time;
+
+uniform float A_2;
+uniform vec3 D_2;
+uniform float f_2;
+uniform float p_2;
+uniform float k_2;
+
+uniform float t;
 
 out VS_OUT {
 	vec3 normal;
@@ -32,17 +39,40 @@ out VS_OUT {
 void main()
 {
 	vec3 vertex_in_world = vec3(vertex_model_to_world * vec4(vertex, 1.0));
-	vs_out.normal = vec3(normal_model_to_world * vec4(normal, 0.0));
-	vs_out.tangent = vec3(normal_model_to_world * vec4(tangent, 0.0));
-	vs_out.binormal = vec3(normal_model_to_world * vec4(binormal, 0.0));
 	vs_out.texcoord = vec2(texcoord.x, texcoord.y);
 	vs_out.light_vector = light_position - vertex_in_world;
 	vs_out.camera_vector = camera_position - vertex_in_world;
 
-	float next_pos = D_1.x * vertex_in_world.x + D_1.z * vertex_in_world.z;
-	float next_sin = sin(next_pos * f_1 + time * p_1);
-	float height = A_1 * pow(next_sin * 0.5 + 0.5, k_1);
-	vertex_in_world.y = height;
+	// --- WAVE ONE ---
+	vec4 G_1 = vertex_model_to_world * vec4(vertex, 1.0);
+	float dPos1 = D_1.x * G_1.x + D_1.z * G_1.z;
+	float dSin1 = sin(dPos1 * f_1 + t * p_1) * 0.5 + 0.5;
+	float h1 = A_1 * pow(dSin1, k_1);
+	G_1.y = h1;
 
-	gl_Position = vertex_world_to_clip * vec4(vertex_in_world, 1.0);
+	float dG_1 = 0.5 * k_1 * f_1 * A_1 * pow(dSin1, k_1 - 1) * cos(dPos1 * f_1 + t * p_1);
+	float dG_1dx = dG_1 * D_1.x;
+	float dG_1dz = dG_1 * D_1.z;
+
+	// --- WAVE TWO ---
+	vec4 G_2 = vertex_model_to_world * vec4(vertex, 1.0);
+	float dPos2 = D_2.x * G_2.x + D_2.z * G_2.z;
+	float dSin2 = sin(dPos2 * f_2 + t * p_2) * 0.5 + 0.5;
+	float h2 = A_2 * pow(dSin2, k_2);
+	G_2.y = h2;
+
+	float dG_2 = 0.5 * k_2 * f_2 * A_2 * pow(dSin2, k_2 - 1) * cos(dPos2 * f_2 + t * p_2);
+	float dG_2dx = dG_2 * D_2.x;
+	float dG_2dz = dG_2 * D_2.z;
+
+	// --- ALL WAVES ---
+	vec4 G = G_1 + G_2;
+	float dGdx = dG_1dx + dG_2dx;
+	float dGdz = dG_1dz + dG_2dz;
+
+	vs_out.normal = vec3(-dGdx, 1.0, -dGdz);
+	vs_out.binormal = vec3(1.0, dGdx, 0.0);
+	vs_out.tangent = vec3(0.0, dGdz, 1.0);
+
+	gl_Position = vertex_world_to_clip * G;
 }

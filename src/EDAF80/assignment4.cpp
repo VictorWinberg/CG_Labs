@@ -118,7 +118,7 @@ edaf80::Assignment4::run()
 			glUniform1f(glGetUniformLocation(program, ("p_"+std::to_string(i+1)).c_str()), waves[i].phase);
 			glUniform1f(glGetUniformLocation(program, ("k_"+std::to_string(i+1)).c_str()), waves[i].sharpness);
 		}
-		glUniform1f(glGetUniformLocation(program, "time"), time);
+		glUniform1f(glGetUniformLocation(program, "t"), time);
 		glUniform1f(glGetUniformLocation(program, "speed"), speed);
 	};
 
