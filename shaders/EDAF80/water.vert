@@ -47,8 +47,8 @@ void main()
 	vec4 G_1 = vertex_model_to_world * vec4(vertex, 1.0);
 	float dPos1 = D_1.x * G_1.x + D_1.z * G_1.z;
 	float dSin1 = sin(dPos1 * f_1 + t * p_1) * 0.5 + 0.5;
-	float h1 = A_1 * pow(dSin1, k_1);
-	G_1.y = h1;
+	float y1 = A_1 * pow(dSin1, k_1);
+	G_1.y = y1;
 
 	float dG_1 = 0.5 * k_1 * f_1 * A_1 * pow(dSin1, k_1 - 1) * cos(dPos1 * f_1 + t * p_1);
 	float dG_1dx = dG_1 * D_1.x;
@@ -58,8 +58,8 @@ void main()
 	vec4 G_2 = vertex_model_to_world * vec4(vertex, 1.0);
 	float dPos2 = D_2.x * G_2.x + D_2.z * G_2.z;
 	float dSin2 = sin(dPos2 * f_2 + t * p_2) * 0.5 + 0.5;
-	float h2 = A_2 * pow(dSin2, k_2);
-	G_2.y = h2;
+	float y2 = A_2 * pow(dSin2, k_2);
+	G_2.y = y2;
 
 	float dG_2 = 0.5 * k_2 * f_2 * A_2 * pow(dSin2, k_2 - 1) * cos(dPos2 * f_2 + t * p_2);
 	float dG_2dx = dG_2 * D_2.x;

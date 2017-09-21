@@ -83,7 +83,7 @@ edaf80::Assignment4::run()
 	auto light_position = glm::vec3(20.0f, 20.0f, 20.0f);
 	auto camera_position = mCamera.mWorld.GetTranslation();
 	
-	int nbrWaves = 2;
+	const int nbrWaves = 2;
 
 	struct wave {
 		float amplitude;
@@ -108,7 +108,7 @@ edaf80::Assignment4::run()
 	auto speed = 10.0f;
 	auto time = 0.0f;
 
-	auto const set_uniforms = [&light_position,&camera_position,&waves,&time,&speed,&nbrWaves](GLuint program){
+	auto const set_uniforms = [&light_position,&camera_position,&waves,&time,&nbrWaves](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
 		for (int i = 0; i < nbrWaves; i++) {
@@ -119,7 +119,6 @@ edaf80::Assignment4::run()
 			glUniform1f(glGetUniformLocation(program, ("k_"+std::to_string(i+1)).c_str()), waves[i].sharpness);
 		}
 		glUniform1f(glGetUniformLocation(program, "t"), time);
-		glUniform1f(glGetUniformLocation(program, "speed"), speed);
 	};
 
 	//
@@ -135,6 +134,10 @@ edaf80::Assignment4::run()
 
 	auto water_texture = bonobo::loadTexture2D("waves.png");
 	node.add_texture("bump_texture", water_texture, GL_TEXTURE_2D);
+
+	std::string cubemap = "cloudyhills";
+	auto texture_cubemap = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
+	node.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
 
 	glEnable(GL_DEPTH_TEST);
 
