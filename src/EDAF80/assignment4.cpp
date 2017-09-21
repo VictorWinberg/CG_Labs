@@ -66,8 +66,8 @@ edaf80::Assignment4::run()
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	GLuint water_shader = 0u;
-	auto const reload_shaders = [&water_shader](){
+	GLuint water_shader = 0u, cube_shader = 0u;
+	auto const reload_shaders = [&water_shader, &cube_shader](){
 		//
 		// Todo: Insert the creation of other shader programs.
 		//       (Check how it was done in assignment 3.)
@@ -77,6 +77,12 @@ edaf80::Assignment4::run()
 		water_shader = bonobo::createProgram("water.vert", "water.frag");
 		if (water_shader == 0u)
 			LogError("Failed to load water shader");
+
+		if (cube_shader != 0u)
+			glDeleteProgram(cube_shader);
+		cube_shader = bonobo::createProgram("cube.vert", "cube.frag");
+		if (cube_shader == 0u)
+			LogError("Failed to load cube shader");
 	};
 	reload_shaders();
 
@@ -126,6 +132,7 @@ edaf80::Assignment4::run()
 	//
 	int size = 100;
 	auto quad_shape = parametric_shapes::createQuad(size, size, size, size);
+	auto cube_map_shape = parametric_shapes::createSphere(100u, 100u, 100.0f);
 
 	auto node = Node();
 	node.set_geometry(quad_shape);
@@ -135,9 +142,14 @@ edaf80::Assignment4::run()
 	auto water_texture = bonobo::loadTexture2D("waves.png");
 	node.add_texture("bump_texture", water_texture, GL_TEXTURE_2D);
 
+	auto skybox = Node();
+	skybox.set_geometry(cube_map_shape);
+	skybox.set_program(cube_shader, set_uniforms);
+
 	std::string cubemap = "cloudyhills";
 	auto texture_cubemap = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
 	node.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
+	skybox.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -178,6 +190,8 @@ edaf80::Assignment4::run()
 			reload_shaders();
 		}
 
+		camera_position = mCamera.mWorld.GetTranslation();
+
 		auto const window_size = window->GetDimensions();
 		glViewport(0, 0, window_size.x, window_size.y);
 		glClearDepthf(1.0f);
@@ -188,6 +202,7 @@ edaf80::Assignment4::run()
 		// Todo: Render all your geometry here.
 		//
 		node.render(mCamera.GetWorldToClipMatrix(), node.get_transform());
+		skybox.render(mCamera.GetWorldToClipMatrix(), skybox.get_transform());
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -238,6 +253,8 @@ edaf80::Assignment4::run()
 	//
 	glDeleteProgram(water_shader);
 	water_shader = 0u;
+	glDeleteProgram(cube_shader);
+	cube_shader = 0u;
 }
 
 int main()

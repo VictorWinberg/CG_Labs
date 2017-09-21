@@ -38,11 +38,6 @@ out VS_OUT {
 
 void main()
 {
-	vec3 vertex_in_world = vec3(vertex_model_to_world * vec4(vertex, 1.0));
-	vs_out.texcoord = vec2(texcoord.x, texcoord.y);
-	vs_out.light_vector = light_position - vertex_in_world;
-	vs_out.camera_vector = camera_position - vertex_in_world;
-
 	// --- WAVE ONE ---
 	vec4 G_1 = vertex_model_to_world * vec4(vertex, 1.0);
 	float dPos1 = D_1.x * G_1.x + D_1.z * G_1.z;
@@ -73,6 +68,9 @@ void main()
 	vs_out.normal = vec3(-dHdx, 1.0, -dHdz);
 	vs_out.binormal = vec3(1.0, dHdx, 0.0);
 	vs_out.tangent = vec3(0.0, dHdz, 1.0);
+	vs_out.light_vector = light_position - H.xyz;
+	vs_out.camera_vector = camera_position - H.xyz;
+	vs_out.texcoord = texcoord.xy;
 
 	gl_Position = vertex_world_to_clip * H;
 }
