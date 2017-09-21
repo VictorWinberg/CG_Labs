@@ -32,11 +32,11 @@ void main()
 	vec3 n_bump = 2.0 * texture(bump_texture, fs_in.texcoord).rgb - 1;
 	n_bump = normalize(n_bump);
 
-	mat3 vector_transform;
-	vector_transform[0] = t;
-	vector_transform[1] = b;
-	vector_transform[2] = n;
-	vec3 n_prime = vector_transform * n_bump;
+	mat3 tangent_to_model;
+	tangent_to_model[0] = t;
+	tangent_to_model[1] = b;
+	tangent_to_model[2] = n;
+	vec3 n_prime = tangent_to_model * n_bump;
 
 	vec3 R = normalize(reflect(-L, n_prime));
 
