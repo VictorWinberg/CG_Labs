@@ -2,7 +2,6 @@
 
 uniform sampler2D bump_texture;
 uniform samplerCube cube_map_texture;
-uniform mat4 normal_model_to_world;
 
 uniform float t;
 
