@@ -17,8 +17,6 @@ in VS_OUT {
 
 out vec4 frag_color;
 
-vec4 diffuse_color;
-
 void main()
 {
 	vec3 n = normalize(fs_in.normal);
@@ -26,12 +24,14 @@ void main()
 	vec3 V = normalize(fs_in.camera_vector);
 	vec3 R = normalize(reflect(-L, n));
 
+	vec3 diffuse_color;
 	if (has_textures != 0)
-		diffuse_color = texture(diffuse_texture, fs_in.texcoord);
+		diffuse_color = vec3(texture(diffuse_texture, fs_in.texcoord));
 	else
-		diffuse_color = vec4(diffuse, 1.0);
+		diffuse_color = diffuse;
 
-	vec4 diffuse_shading = diffuse_color * max(dot(n, L), 0.0);
+	vec3 diffuse_shading = diffuse_color * max(dot(n, L), 0.0);
 	vec3 specular_shading = specular * pow(max(dot(R, V), 0.0), shininess);
-	frag_color = vec4(ambient, 0) + diffuse_shading + vec4(specular_shading, 0);
+	frag_color.rgb = ambient + diffuse_shading + specular_shading;
+	frag_color.a = 1;
 }

@@ -66,7 +66,7 @@ edaf80::Assignment3::run()
 {
 	// Load the sphere geometry
 	auto sphere_shape = parametric_shapes::createSphere(100u, 100u, 2.0f);
-	auto cube_map_shape = parametric_shapes::createSphere(100u, 100u, 20.0f);
+	auto cube_map_shape = parametric_shapes::createSphere(100u, 100u, 100.0f);
 	if (cube_map_shape.vao == 0u || sphere_shape.vao == 0u) {
 		LogError("Failed to retrieve the sphere mesh");
 		return;
@@ -134,7 +134,7 @@ edaf80::Assignment3::run()
 	node.set_geometry(sphere_shape);
 	node.set_program(phong_shader, phong_set_uniforms);
 
-	std::string texture_name = "stone47";
+	std::string texture_name = "fieldstone";
 	auto texture_diffuse = bonobo::loadTexture2D(texture_name + "_diffuse.png");
 	node.add_texture("diffuse_texture", texture_diffuse, GL_TEXTURE_2D);
 	auto texture_bump = bonobo::loadTexture2D(texture_name + "_bump.png");

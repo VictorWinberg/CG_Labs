@@ -273,6 +273,7 @@ parametric_shapes::createSphere(unsigned int const res_theta,
     for (unsigned int i = 0u; i < res_phi; ++i) {
         float cos_phi = std::cos(phi),
         sin_phi = std::sin(phi);
+		theta = 0.0f;
 
         for (unsigned int j = 0u; j < res_theta; ++j) {
             float cos_theta = std::cos(theta),
