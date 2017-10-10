@@ -203,6 +203,8 @@ edaf80::Assignment5::run()
 	ship.set_program(phong_shader, phong_set_uniforms);
 	ship.set_translation(glm::vec3(0, 0.5f, 0));
 	ship.set_rotation_y(bonobo::pi);
+	float ship_collision_radius = 1.5f;
+	int deaths = 0;
 
 	auto ship_diffuse_texture = bonobo::loadTexture2D("metal-surface.png");
 	ship.add_texture("diffuse_texture", ship_diffuse_texture, GL_TEXTURE_2D);
@@ -218,7 +220,7 @@ edaf80::Assignment5::run()
 	for (int i = 0; i < rocks.size(); i++) {
 		rocks[i].set_geometry(sphere_shape);
 		rocks[i].set_program(phong_shader, phong_set_uniforms);
-		rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size - max_radius - rand() % size / 2));
+		rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size - max_radius - rand() % size));
 		rocks[i].set_scaling(glm::vec3((rand() % (max_radius - 1) * res) / res + 1));
 		rocks[i].add_texture("diffuse_texture", stone_diffuse_texture, GL_TEXTURE_2D);
 		rocks[i].add_texture("bump_texture", stone_bump_texture, GL_TEXTURE_2D);
@@ -281,10 +283,27 @@ edaf80::Assignment5::run()
 
 		ship.translate(velocity);
 		
-		float water_speed = 0.25f;
+		float water_speed = 0.5f;
 		for (int i = 0; i < rocks.size(); i++) {
-			if(-rocks[i].get_transform()[3][2] < -5)
+			glm::mat4 T_rock = rocks[i].get_transform();
+			glm::vec3 p1 = glm::vec3(T[3][0], T[3][1], T[3][2]);
+			glm::vec3 p2 = glm::vec3(T_rock[3][0], T_rock[3][1], T_rock[3][2]);
+			glm::vec3 diff = p2 - p1;
+			float dist = sqrt(dot(diff, diff));
+			
+			float r1 = ship_collision_radius;
+			float r2 = T_rock[0][0];
+			
+			bool collision = dist < r1 + r2;
+			
+			if(collision) {
+				deaths++;
+				LogInfo(("Deaths: " + std::to_string(deaths)).c_str());
+			}
+			
+			if(collision || -rocks[i].get_transform()[3][2] < -5)
 				rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size / 2 - max_radius));
+			
 			rocks[i].translate(glm::vec3(0, 0, water_speed));
 		}
 
