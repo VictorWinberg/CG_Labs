@@ -202,6 +202,7 @@ edaf80::Assignment5::run()
 	//glCullFace(GL_FRONT);
 	//glCullFace(GL_BACK);
 
+	auto velocity = glm::vec3(0, 0, 0);
 
 	f64 ddeltatime;
 	size_t fpsSamples = 0;
@@ -234,6 +235,21 @@ edaf80::Assignment5::run()
 			reload_shaders();
 		}
 
+		glm::mat4 T = ship.get_transform();
+		float posx = T[3][0], posz = -T[3][2];
+		float x = velocity[0], z = -velocity[2];
+		float dx = 0.0, dz = 0.0;
+		float acceleration = 0.001f * ddeltatime;
+
+		if ((inputHandler->GetKeycodeState(GLFW_KEY_W) & PRESSED) && posz + z * 20.0f <  4) dz += acceleration;
+		if ((inputHandler->GetKeycodeState(GLFW_KEY_S) & PRESSED) && posz + z * 20.0f > -4) dz -= acceleration;
+		if ((inputHandler->GetKeycodeState(GLFW_KEY_A) & PRESSED) && posx + x * 20.0f > -8) dx -= acceleration;
+		if ((inputHandler->GetKeycodeState(GLFW_KEY_D) & PRESSED) && posx + x * 20.0f <  8) dx += acceleration;
+
+		velocity += glm::vec3(dx, 0, -dz);
+		velocity *= 0.95f;
+
+		ship.translate(velocity);
 
 		auto const window_size = window->GetDimensions();
 		glViewport(0, 0, window_size.x, window_size.y);
