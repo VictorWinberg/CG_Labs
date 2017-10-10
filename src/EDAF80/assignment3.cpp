@@ -253,7 +253,7 @@ edaf80::Assignment3::run()
 	glDeleteProgram(cube_shader);
 	cube_shader = 0u;
 	glDeleteProgram(phong_shader);
-	cube_shader = 0u;
+	phong_shader = 0u;
 }
 
 int main()
