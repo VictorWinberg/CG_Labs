@@ -22,6 +22,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <stdexcept>
+#include <stack>
 
 edaf80::Assignment5::Assignment5()
 {
@@ -53,8 +54,11 @@ edaf80::Assignment5::run()
 {
 	// Load the sphere geometry
 	auto const objects = bonobo::loadObjects("spaceship.obj");
-	if (objects.empty())
+	auto sphere_shape = parametric_shapes::createSphere(100u, 100u, 1.0f);
+	if (objects.empty() || sphere_shape.vao == 0u) {
+		LogError("Failed to retrieve the objects");
 		return;
+	}
 	auto const& ship_shape = objects.front();
 
 	// Set up the camera
@@ -112,6 +116,8 @@ edaf80::Assignment5::run()
 	};
 	reload_shaders();
 
+	srand(time(NULL));
+
 	auto light_position = glm::vec3(-100.0f, 200.0f, -100.0f);
 	auto camera_position = mCamera.mWorld.GetTranslation();
 
@@ -165,7 +171,9 @@ edaf80::Assignment5::run()
 	//
 	// Todo: Load your geometry
 	//
-	int size = 200;
+	auto game = Node();
+
+	int size = 100;
 	auto quad_shape = parametric_shapes::createQuad(size, size, size, size);
 	auto cube_map_shape = parametric_shapes::createSphere(100u, 100u, size/2.0f);
 
@@ -176,6 +184,8 @@ edaf80::Assignment5::run()
 
 	auto water_texture = bonobo::loadTexture2D("waves.png");
 	water.add_texture("bump_texture", water_texture, GL_TEXTURE_2D);
+	
+	game.add_child(&water);
 
 	auto skybox = Node();
 	skybox.set_geometry(cube_map_shape);
@@ -185,15 +195,33 @@ edaf80::Assignment5::run()
 	auto texture_cubemap = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
 	water.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
 	skybox.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
+	
+	game.add_child(&skybox);
 
 	auto ship = Node();
 	ship.set_geometry(ship_shape);
 	ship.set_program(phong_shader, phong_set_uniforms);
-	ship.set_translation(glm::vec3(0, 1, 0));
+	ship.set_translation(glm::vec3(0, 0.5f, 0));
 	ship.set_rotation_y(bonobo::pi);
 
 	auto ship_diffuse_texture = bonobo::loadTexture2D("metal-surface.png");
 	ship.add_texture("diffuse_texture", ship_diffuse_texture, GL_TEXTURE_2D);
+	
+	game.add_child(&ship);
+	
+	std::vector<Node> rocks(10);
+	auto stone_diffuse_texture = bonobo::loadTexture2D("stone47_diffuse.png");
+	auto stone_bump_texture = bonobo::loadTexture2D("stone47_bump.png");
+	
+	for (int i = 0; i < rocks.size(); i++) {
+		rocks[i].set_geometry(sphere_shape);
+		rocks[i].set_program(phong_shader, phong_set_uniforms);
+		rocks[i].set_translation(glm::vec3(rand() % 50 - 25, 0, -40));
+		rocks[i].set_scaling(glm::vec3((rand() % 20) / 10.0f + 1));
+		rocks[i].add_texture("diffuse_texture", stone_diffuse_texture, GL_TEXTURE_2D);
+		rocks[i].add_texture("bump_texture", stone_bump_texture, GL_TEXTURE_2D);
+		game.add_child(&rocks[i]);
+	}
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -260,9 +288,19 @@ edaf80::Assignment5::run()
 		//
 		// Todo: Render all your geometry here.
 		//
-		water.render(mCamera.GetWorldToClipMatrix(), water.get_transform());
-		skybox.render(mCamera.GetWorldToClipMatrix(), skybox.get_transform());
-		ship.render(mCamera.GetWorldToClipMatrix(), ship.get_transform());
+		auto node_stack = std::stack<Node const*>();
+		node_stack.push(&game);
+		
+		while (!node_stack.empty()) {
+			auto const current_node = node_stack.top();
+			node_stack.pop();
+			
+			current_node->render(mCamera.GetWorldToClipMatrix(), current_node->get_transform());
+			
+			for (int i = 0; i < current_node->get_children_nb(); i++) {
+				node_stack.push(current_node->get_child(i));
+			}
+		}
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
