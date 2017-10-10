@@ -213,11 +213,13 @@ edaf80::Assignment5::run()
 	auto stone_diffuse_texture = bonobo::loadTexture2D("stone47_diffuse.png");
 	auto stone_bump_texture = bonobo::loadTexture2D("stone47_bump.png");
 	
+	int max_radius = 3;
+	float res = 10;
 	for (int i = 0; i < rocks.size(); i++) {
 		rocks[i].set_geometry(sphere_shape);
 		rocks[i].set_program(phong_shader, phong_set_uniforms);
-		rocks[i].set_translation(glm::vec3(rand() % 50 - 25, 0, -40));
-		rocks[i].set_scaling(glm::vec3((rand() % 20) / 10.0f + 1));
+		rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size - max_radius - rand() % size / 2));
+		rocks[i].set_scaling(glm::vec3((rand() % (max_radius - 1) * res) / res + 1));
 		rocks[i].add_texture("diffuse_texture", stone_diffuse_texture, GL_TEXTURE_2D);
 		rocks[i].add_texture("bump_texture", stone_bump_texture, GL_TEXTURE_2D);
 		game.add_child(&rocks[i]);
@@ -271,13 +273,20 @@ edaf80::Assignment5::run()
 
 		if ((inputHandler->GetKeycodeState(GLFW_KEY_W) & PRESSED) && posz + z * 20.0f <  4) dz += acceleration;
 		if ((inputHandler->GetKeycodeState(GLFW_KEY_S) & PRESSED) && posz + z * 20.0f > -4) dz -= acceleration;
-		if ((inputHandler->GetKeycodeState(GLFW_KEY_A) & PRESSED) && posx + x * 20.0f > -8) dx -= acceleration;
-		if ((inputHandler->GetKeycodeState(GLFW_KEY_D) & PRESSED) && posx + x * 20.0f <  8) dx += acceleration;
+		if ((inputHandler->GetKeycodeState(GLFW_KEY_A) & PRESSED) && posx + x * 20.0f > -10) dx -= acceleration;
+		if ((inputHandler->GetKeycodeState(GLFW_KEY_D) & PRESSED) && posx + x * 20.0f <  10) dx += acceleration;
 
 		velocity += glm::vec3(dx, 0, -dz);
 		velocity *= 0.95f;
 
 		ship.translate(velocity);
+		
+		float water_speed = 0.25f;
+		for (int i = 0; i < rocks.size(); i++) {
+			if(-rocks[i].get_transform()[3][2] < -5)
+				rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size / 2 - max_radius));
+			rocks[i].translate(glm::vec3(0, 0, water_speed));
+		}
 
 		auto const window_size = window->GetDimensions();
 		glViewport(0, 0, window_size.x, window_size.y);
