@@ -168,6 +168,12 @@ edaf80::Assignment5::run()
 		glUniform3fv(glGetUniformLocation(program, "specular"), 1, glm::value_ptr(glm::vec3(0.3f, 0.3f, 0.3f)));
 		glUniform1f(glGetUniformLocation(program, "shininess"), 1);
 	};
+	
+	auto const hill_set_uniforms = [&phong_set_uniforms](GLuint program){
+		glUniform3fv(glGetUniformLocation(program, "ambient"), 1, glm::value_ptr(glm::vec3(236/256.0f, 217/256.0f, 171/256.0f)));
+		glUniform3fv(glGetUniformLocation(program, "diffuse"), 1, glm::value_ptr(glm::vec3(0,0,0)));
+		glUniform3fv(glGetUniformLocation(program, "specular"), 1, glm::value_ptr(glm::vec3(0,0,0)));
+	};
 
 	//
 	// Todo: Load your geometry
@@ -221,7 +227,7 @@ edaf80::Assignment5::run()
 	for (int i = 0; i < rocks.size(); i++) {
 		rocks[i].set_geometry(sphere_shape);
 		rocks[i].set_program(phong_shader, phong_set_uniforms);
-		rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size - max_radius - rand() % size));
+		rocks[i].set_translation(glm::vec3(rand() % size / 4 - size / 8, 0, - size - max_radius - rand() % size));
 		rocks[i].set_scaling(glm::vec3((rand() % (max_radius - 1) * res) / res + 1));
 		rocks[i].add_texture("diffuse_texture", stone_diffuse_texture, GL_TEXTURE_2D);
 		rocks[i].add_texture("bump_texture", stone_bump_texture, GL_TEXTURE_2D);
@@ -237,6 +243,24 @@ edaf80::Assignment5::run()
 		coins[i].set_scaling(glm::vec3(1, 1, 0.1f));
 		game.add_child(&coins[i]);
 	}
+	
+	auto left_hill = Node();
+	left_hill.set_geometry(quad_shape);
+	left_hill.set_program(phong_shader, hill_set_uniforms);
+	left_hill.set_translation(glm::vec3(-15, 0, -50));
+	left_hill.set_rotation_z(bonobo::pi * 7/8);
+	left_hill.set_scaling(glm::vec3(0.1f, 1, 0.5f));
+	
+	game.add_child(&left_hill);
+	
+	auto right_hill = Node();
+	right_hill.set_geometry(quad_shape);
+	right_hill.set_program(phong_shader, hill_set_uniforms);
+	right_hill.set_translation(glm::vec3(15, 0, -50));
+	right_hill.set_rotation_z(bonobo::pi * 1/8);
+	right_hill.set_scaling(glm::vec3(0.1f, 1, 0.5f));
+	
+	game.add_child(&right_hill);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -312,7 +336,7 @@ edaf80::Assignment5::run()
 			}
 			
 			if(collision || -rocks[i].get_transform()[3][2] < -5)
-				rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size / 2 - max_radius));
+				rocks[i].set_translation(glm::vec3(rand() % size / 4 - size / 8, 0, - size / 2 - max_radius));
 			
 			rocks[i].translate(glm::vec3(0, 0, water_speed));
 		}
