@@ -53,14 +53,16 @@ void
 edaf80::Assignment5::run()
 {
 	// Load the sphere geometry
-	auto const objects = bonobo::loadObjects("spaceship.obj");
+	auto const ship_obj = bonobo::loadObjects("spaceship.obj");
+	auto const heart_obj = bonobo::loadObjects("heart.obj");
 	auto sphere_shape = parametric_shapes::createSphere(100u, 100u, 1.0f);
 	auto coin_shape = parametric_shapes::createCircleRing(100u, 100u, 0.0f, 3.0f);
-	if (objects.empty() || sphere_shape.vao == 0u || coin_shape.vao == 0u) {
+	if (ship_obj.empty() || heart_obj.empty() || sphere_shape.vao == 0u || coin_shape.vao == 0u) {
 		LogError("Failed to retrieve the objects");
 		return;
 	}
-	auto const& ship_shape = objects.front();
+	auto const& ship_shape = ship_obj.front();
+	auto const& heart_shape = heart_obj.front();
 
 	// Set up the camera
 	FPSCameraf mCamera(bonobo::pi / 4.0f,
@@ -169,6 +171,12 @@ edaf80::Assignment5::run()
 		glUniform1f(glGetUniformLocation(program, "shininess"), 1);
 	};
 	
+	auto const lives_set_uniforms = [&phong_set_uniforms](GLuint program){
+		glUniform3fv(glGetUniformLocation(program, "ambient"), 1, glm::value_ptr(glm::vec3(150/256.0f, 0, 0)));
+		glUniform3fv(glGetUniformLocation(program, "diffuse"), 1, glm::value_ptr(glm::vec3(0,0,0)));
+		glUniform3fv(glGetUniformLocation(program, "specular"), 1, glm::value_ptr(glm::vec3(0,0,0)));
+	};
+	
 	auto const hill_set_uniforms = [&phong_set_uniforms](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "ambient"), 1, glm::value_ptr(glm::vec3(236/256.0f, 217/256.0f, 171/256.0f)));
 		glUniform3fv(glGetUniformLocation(program, "diffuse"), 1, glm::value_ptr(glm::vec3(0,0,0)));
@@ -211,7 +219,7 @@ edaf80::Assignment5::run()
 	ship.set_translation(glm::vec3(0, 0.5f, 0));
 	ship.set_rotation_y(bonobo::pi);
 	float ship_collision_radius = 1.5f, water_speed = 0.5f;
-	int deaths = 0, points = 0;
+	int points = 0;
 
 	auto ship_diffuse_texture = bonobo::loadTexture2D("metal-surface.png");
 	ship.add_texture("diffuse_texture", ship_diffuse_texture, GL_TEXTURE_2D);
@@ -242,6 +250,16 @@ edaf80::Assignment5::run()
 		coins[i].set_translation(glm::vec3(rand() % size / 4 - size / 8, 1.5f, - size - max_radius - rand() % size));
 		coins[i].set_scaling(glm::vec3(1, 1, 0.1f));
 		game.add_child(&coins[i]);
+	}
+	
+	std::vector<Node> lives(4);
+	
+	for (int i = 0; i < lives.size(); i++) {
+		lives[i].set_geometry(heart_shape);
+		lives[i].set_program(phong_shader, lives_set_uniforms);
+		lives[i].set_translation(glm::vec3((i - 1) * 3, 8, -4));
+		lives[i].set_scaling(glm::vec3(0.005f));
+		game.add_child(&lives[i]);
 	}
 	
 	auto left_hill = Node();
@@ -330,9 +348,8 @@ edaf80::Assignment5::run()
 			
 			bool collision = dist < r1 + r2;
 			
-			if(collision) {
-				deaths++;
-				LogInfo(("Deaths: " + std::to_string(deaths)).c_str());
+			if(collision && !lives.empty()) {
+				lives.erase(lives.begin());
 			}
 			
 			if(collision || -rocks[i].get_transform()[3][2] < -5)
@@ -355,7 +372,6 @@ edaf80::Assignment5::run()
 			
 			if(collision) {
 				points++;
-				LogInfo(("Points: " + std::to_string(points)).c_str());
 				waves[0].frequency += 0.1f;
 				if(points % 10 == 0)
 					water_speed += 3 / 20.0f;
@@ -393,31 +409,15 @@ edaf80::Assignment5::run()
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		Log::View::Render();
+		//Log::View::Render();
 
 		//
 		// Todo: If you want a custom ImGUI window, you can set it up
 		//       here
 		//
-		bool opened;
-		for (int i = 0; i < nbrWaves; i++) {
-			auto title = "Wave Control ";
-			auto index = std::to_string(i+1);
-			opened = ImGui::Begin((title + index).c_str(), &opened, ImVec2(300, 200), -1.0f, 0);
-			if (opened) {
-				ImGui::SliderFloat("Amplitude", &waves[i].amplitude, 0.0f, 5.0f);
-				ImGui::SliderFloat3("Direction", glm::value_ptr(waves[i].direction), -1.0f, 1.0f);
-				ImGui::SliderFloat("Frequency", &waves[i].frequency, 0.0f, 5.0f);
-				ImGui::SliderFloat("Phase", &waves[i].phase, 0.0f, 5.0f);
-				ImGui::SliderFloat("Sharpness", &waves[i].sharpness, 0.0f, 5.0f);
-			}
-			ImGui::End();
-		}
-		
-		ImGui::Begin("Enviroment Control", &opened, ImVec2(120, 50), -1.0f, 0);
+		bool opened = ImGui::Begin("Points", &opened, ImVec2(120, 50), -1.0f, 0);
 		if (opened) {
-			ImGui::SliderFloat("Speed", &speed, 0.0f, 50.0f);
-			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -500.0f, 500.0f);
+			ImGui::Text(std::to_string(points).c_str());
 		}
 		ImGui::End();
 
