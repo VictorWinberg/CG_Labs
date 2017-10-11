@@ -55,7 +55,8 @@ edaf80::Assignment5::run()
 	// Load the sphere geometry
 	auto const objects = bonobo::loadObjects("spaceship.obj");
 	auto sphere_shape = parametric_shapes::createSphere(100u, 100u, 1.0f);
-	if (objects.empty() || sphere_shape.vao == 0u) {
+	auto coin_shape = parametric_shapes::createCircleRing(100u, 100u, 0.0f, 3.0f);
+	if (objects.empty() || sphere_shape.vao == 0u || coin_shape.vao == 0u) {
 		LogError("Failed to retrieve the objects");
 		return;
 	}
@@ -118,7 +119,7 @@ edaf80::Assignment5::run()
 
 	srand(time(NULL));
 
-	auto light_position = glm::vec3(-100.0f, 200.0f, -100.0f);
+	auto light_position = glm::vec3(100.0f, 150.0f, 60.0f);
 	auto camera_position = mCamera.mWorld.GetTranslation();
 
 	const int nbrWaves = 2;
@@ -132,15 +133,15 @@ edaf80::Assignment5::run()
 	} waves[nbrWaves];
 
 	waves[0].amplitude = 0.25f;
-	waves[0].direction = glm::vec3(-1, 0, 0);
-	waves[0].frequency = 2.0f;
-	waves[0].phase = 0.5f;
+	waves[0].direction = glm::vec3(0, 0, -0.2f);
+	waves[0].frequency = 1.0f;
+	waves[0].phase = 1.0f;
 	waves[0].sharpness = 2.0f;
 
-	waves[1].amplitude = 0.25;
-	waves[1].direction = glm::vec3(-0.5f, 0.0f, -0.5f);
+	waves[1].amplitude = 0.25f;
+	waves[1].direction = glm::vec3(-0.2f, 0, 0);
 	waves[1].frequency = 2.0f;
-	waves[1].phase = 0.3f;
+	waves[1].phase = 0.2f;
 	waves[1].sharpness = 2.0f;
 
 	auto speed = 10.0f;
@@ -203,15 +204,15 @@ edaf80::Assignment5::run()
 	ship.set_program(phong_shader, phong_set_uniforms);
 	ship.set_translation(glm::vec3(0, 0.5f, 0));
 	ship.set_rotation_y(bonobo::pi);
-	float ship_collision_radius = 1.5f;
-	int deaths = 0;
+	float ship_collision_radius = 1.5f, water_speed = 0.5f;
+	int deaths = 0, points = 0;
 
 	auto ship_diffuse_texture = bonobo::loadTexture2D("metal-surface.png");
 	ship.add_texture("diffuse_texture", ship_diffuse_texture, GL_TEXTURE_2D);
 	
 	game.add_child(&ship);
 	
-	std::vector<Node> rocks(10);
+	std::vector<Node> rocks(5);
 	auto stone_diffuse_texture = bonobo::loadTexture2D("stone47_diffuse.png");
 	auto stone_bump_texture = bonobo::loadTexture2D("stone47_bump.png");
 	
@@ -225,6 +226,16 @@ edaf80::Assignment5::run()
 		rocks[i].add_texture("diffuse_texture", stone_diffuse_texture, GL_TEXTURE_2D);
 		rocks[i].add_texture("bump_texture", stone_bump_texture, GL_TEXTURE_2D);
 		game.add_child(&rocks[i]);
+	}
+	
+	std::vector<Node> coins(2);
+	
+	for (int i = 0; i < coins.size(); i++) {
+		coins[i].set_geometry(sphere_shape);
+		coins[i].set_program(phong_shader, phong_set_uniforms);
+		coins[i].set_translation(glm::vec3(rand() % size / 4 - size / 8, 1.5f, - size - max_radius - rand() % size));
+		coins[i].set_scaling(glm::vec3(1, 1, 0.1f));
+		game.add_child(&coins[i]);
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -283,7 +294,6 @@ edaf80::Assignment5::run()
 
 		ship.translate(velocity);
 		
-		float water_speed = 0.5f;
 		for (int i = 0; i < rocks.size(); i++) {
 			glm::mat4 T_rock = rocks[i].get_transform();
 			glm::vec3 p1 = glm::vec3(T[3][0], T[3][1], T[3][2]);
@@ -305,6 +315,33 @@ edaf80::Assignment5::run()
 				rocks[i].set_translation(glm::vec3(rand() % size / 2 - size / 4, 0, - size / 2 - max_radius));
 			
 			rocks[i].translate(glm::vec3(0, 0, water_speed));
+		}
+		
+		for(int i = 0; i < coins.size(); i++) {
+			glm::mat4 T_coin = coins[i].get_transform();
+			glm::vec3 p1 = glm::vec3(T[3][0], T[3][1], T[3][2]);
+			glm::vec3 p2 = glm::vec3(T_coin[3][0], T_coin[3][1], T_coin[3][2]);
+			glm::vec3 diff = p2 - p1;
+			float dist = sqrt(dot(diff, diff));
+			
+			float r1 = ship_collision_radius;
+			float r2 = 1.5f;
+			
+			bool collision = dist < r1 + r2;
+			
+			if(collision) {
+				points++;
+				LogInfo(("Points: " + std::to_string(points)).c_str());
+				waves[0].frequency += 0.1f;
+				if(points % 10 == 0)
+					water_speed += 3 / 20.0f;
+			}
+			
+			if(collision || -coins[i].get_transform()[3][2] < -5)
+				coins[i].set_translation(glm::vec3(rand() % size / 4 - size / 8, 1.5f, - size / 2 - max_radius));
+			
+			coins[i].translate(glm::vec3(0, 0, water_speed));
+			coins[i].rotate_y(0.05f);
 		}
 
 		auto const window_size = window->GetDimensions();
@@ -338,6 +375,27 @@ edaf80::Assignment5::run()
 		// Todo: If you want a custom ImGUI window, you can set it up
 		//       here
 		//
+		bool opened;
+		for (int i = 0; i < nbrWaves; i++) {
+			auto title = "Wave Control ";
+			auto index = std::to_string(i+1);
+			opened = ImGui::Begin((title + index).c_str(), &opened, ImVec2(300, 200), -1.0f, 0);
+			if (opened) {
+				ImGui::SliderFloat("Amplitude", &waves[i].amplitude, 0.0f, 5.0f);
+				ImGui::SliderFloat3("Direction", glm::value_ptr(waves[i].direction), -1.0f, 1.0f);
+				ImGui::SliderFloat("Frequency", &waves[i].frequency, 0.0f, 5.0f);
+				ImGui::SliderFloat("Phase", &waves[i].phase, 0.0f, 5.0f);
+				ImGui::SliderFloat("Sharpness", &waves[i].sharpness, 0.0f, 5.0f);
+			}
+			ImGui::End();
+		}
+		
+		ImGui::Begin("Enviroment Control", &opened, ImVec2(120, 50), -1.0f, 0);
+		if (opened) {
+			ImGui::SliderFloat("Speed", &speed, 0.0f, 50.0f);
+			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -500.0f, 500.0f);
+		}
+		ImGui::End();
 
 		ImGui::Render();
 
