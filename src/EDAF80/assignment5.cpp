@@ -119,7 +119,7 @@ edaf80::Assignment5::run()
 
 	srand(time(NULL));
 
-	auto light_position = glm::vec3(100.0f, 150.0f, 60.0f);
+	auto light_position = glm::vec3(-100.0f, 150.0f, 60.0f);
 	auto camera_position = mCamera.mWorld.GetTranslation();
 
 	const int nbrWaves = 2;
@@ -192,7 +192,7 @@ edaf80::Assignment5::run()
 	skybox.set_geometry(cube_map_shape);
 	skybox.set_program(cube_shader, set_uniforms);
 
-	std::string cubemap = "opensea";
+	std::string cubemap = "blue_sky";
 	auto texture_cubemap = bonobo::loadTextureCubeMap(cubemap + "/posx.png", cubemap + "/negx.png", cubemap + "/posy.png", cubemap + "/negy.png", cubemap + "/posz.png", cubemap + "/negz.png");
 	water.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
 	skybox.add_texture("cube_map_texture", texture_cubemap, GL_TEXTURE_CUBE_MAP);
