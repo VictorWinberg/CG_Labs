@@ -219,7 +219,8 @@ edaf80::Assignment5::run()
 	ship.set_translation(glm::vec3(0, 0.5f, 0));
 	ship.set_rotation_y(bonobo::pi);
 	float ship_collision_radius = 1.5f, water_speed = 0.5f;
-	int points = 0;
+	int points = 0, deaths = 0;
+	bool dead = false;
 
 	auto ship_diffuse_texture = bonobo::loadTexture2D("metal-surface.png");
 	ship.add_texture("diffuse_texture", ship_diffuse_texture, GL_TEXTURE_2D);
@@ -252,7 +253,7 @@ edaf80::Assignment5::run()
 		game.add_child(&coins[i]);
 	}
 	
-	std::vector<Node> lives(4);
+	std::vector<Node> lives(3);
 	
 	for (int i = 0; i < lives.size(); i++) {
 		lives[i].set_geometry(heart_shape);
@@ -267,7 +268,7 @@ edaf80::Assignment5::run()
 	left_hill.set_program(phong_shader, hill_set_uniforms);
 	left_hill.set_translation(glm::vec3(-15, 0, -50));
 	left_hill.set_rotation_z(bonobo::pi * 7/8);
-	left_hill.set_scaling(glm::vec3(0.1f, 1, 0.5f));
+	left_hill.set_scaling(glm::vec3(0.1f, 1, 1));
 	
 	game.add_child(&left_hill);
 	
@@ -276,7 +277,7 @@ edaf80::Assignment5::run()
 	right_hill.set_program(phong_shader, hill_set_uniforms);
 	right_hill.set_translation(glm::vec3(15, 0, -50));
 	right_hill.set_rotation_z(bonobo::pi * 1/8);
-	right_hill.set_scaling(glm::vec3(0.1f, 1, 0.5f));
+	right_hill.set_scaling(glm::vec3(0.1f, 1, 1));
 	
 	game.add_child(&right_hill);
 
@@ -317,7 +318,10 @@ edaf80::Assignment5::run()
 		// Todo: If you need to handle inputs, you can do it here
 		//
 		if (inputHandler->GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
-			reload_shaders();
+			ship.set_translation(glm::vec3(0, 0.5f, 0));
+			waves[0].frequency = 1.0f;
+			points = 0, deaths = 0, water_speed = 0.5f;
+			dead = false;
 		}
 
 		glm::mat4 T = ship.get_transform();
@@ -348,8 +352,10 @@ edaf80::Assignment5::run()
 			
 			bool collision = dist < r1 + r2;
 			
-			if(collision && !lives.empty()) {
-				lives.erase(lives.begin());
+			if(collision && !dead) {
+				deaths++;
+				if(deaths == lives.size())
+					dead = true;
 			}
 			
 			if(collision || -rocks[i].get_transform()[3][2] < -5)
@@ -370,11 +376,12 @@ edaf80::Assignment5::run()
 			
 			bool collision = dist < r1 + r2;
 			
-			if(collision) {
+			if(collision && !dead) {
 				points++;
 				waves[0].frequency += 0.1f;
-				if(points % 10 == 0)
+				if(points % 10 == 0) {
 					water_speed += 3 / 20.0f;
+				}
 			}
 			
 			if(collision || -coins[i].get_transform()[3][2] < -5)
@@ -383,6 +390,19 @@ edaf80::Assignment5::run()
 			coins[i].translate(glm::vec3(0, 0, water_speed));
 			coins[i].rotate_y(0.05f);
 		}
+		
+		float _deaths = deaths;
+		for (int i = 0; i < lives.size(); i++) {
+			if (_deaths > 0) {
+				lives[i].set_scaling(glm::vec3(0));
+				_deaths--;
+			} else {
+				lives[i].set_scaling(glm::vec3(0.005f));
+			}
+		}
+		
+		if(dead)
+			ship.translate(glm::vec3(0, -0.01f, 0));
 
 		auto const window_size = window->GetDimensions();
 		glViewport(0, 0, window_size.x, window_size.y);
@@ -415,11 +435,17 @@ edaf80::Assignment5::run()
 		// Todo: If you want a custom ImGUI window, you can set it up
 		//       here
 		//
-		bool opened = ImGui::Begin("Points", &opened, ImVec2(120, 50), -1.0f, 0);
-		if (opened) {
-			ImGui::Text(std::to_string(points).c_str());
+		bool opened = true;
+		if(dead) {
+			ImGui::Begin("Game Over!", &opened, ImVec2(120, 50), -1.0f, 0);
+			ImGui::Text("Oh no, you died!");
+			ImGui::Text(("Total score: " + std::to_string(points)).c_str());
+			ImGui::End();
+		} else {
+			ImGui::Begin("Scoreboard", &opened, ImVec2(120, 50), -1.0f, 0);
+			ImGui::Text(("Current score: " + std::to_string(points)).c_str());
+			ImGui::End();
 		}
-		ImGui::End();
 
 		ImGui::Render();
 
